@@ -1,5 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+<color name="black">#FF000000</color>
+<color name="white">#FFFFFFFF</color>
+<!-- Primary Brand Color -->
+<color name="primary">#FF6B30</color>
+<color name="primary_light">#FF8A55</color>
+<color name="primary_dark">#E65F29</color>
+
+<!-- Secondary / Icon Blue -->
+<color name="accent_blue">#4DA8DA</color>
+
+<!-- Backgrounds -->
+<color name="background">#FFFFFF</color>
+<color name="background_light">#F6F6F6</color>
+
+<!-- Text Colors -->
+<color name="text_primary">#1D1D1F</color>
+<color name="text_secondary">#777777</color>
+<color name="text_hint">#A1A1A1</color>
+
+<!-- Borders & Lines -->
+<color name="border_color">#E5E5E5</color>
+
+<!-- Others -->
+<color name="error_red">#FF3B30</color>
+<color name="success_green">#34C759</color>
 </resources>

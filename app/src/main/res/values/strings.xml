@@ -1,3 +1,68 @@
 <resources>
-    <string name="app_name">KH-STAY</string>
+    <!-- App -->
+    <string name="app_name">KH-Stay</string>
+
+    <!-- Login -->
+    <string name="login_title">Sign in to your Account</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="sign_in">Sign In</string>
+    <string name="continue_google">Continue with Google</string>
+    <string name="continue_facebook">Continue with Facebook</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="sign_up_here">Sign Up</string>
+
+    <!-- Signup -->
+    <string name="signup_title">Sign Up</string>
+    <string name="full_name">Full Name</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="create_account">Create Account</string>
+    <string name="already_have_account">Already have an account?</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Hey Rich Boi, Rith</string>
+    <string name="home_subtitle">Let’s find you a home so you won’t be homeless</string>
+    <string name="search_placeholder">Search for places</string>
+    <string name="most_popular">Most Popular</string>
+    <string name="nearby_location">Nearby your location</string>
+    <string name="view_more">More</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_rental">My Rental</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Room Card -->
+    <string name="price_per_month">%1$s /Month</string>
+    <string name="bathrooms">%1$s Bathrooms</string>
+    <string name="bedrooms">%1$s Bedrooms</string>
+
+    <!-- Popular Screen -->
+    <string name="popular_title">Most Popular</string>
+
+    <!-- Filter Screen -->
+    <string name="filter_title">Filter Results</string>
+    <string name="no_results">No result found</string>
+    <string name="try_another_filter">Try searching with different filters</string>
+
+    <!-- Sort Options -->
+    <string name="sort_newest">Newest</string>
+    <string name="sort_price_low_high">Price: Low to High</string>
+    <string name="sort_price_high_low">Price: High to Low</string>
+    <string name="sort_nearest">Nearest</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="logout">Logout</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!--  For Google  -->
+    <string name="default_web_client_id">1954870184-pm17is8m5pbeudvnbi2veecf6mffrcrd.apps.googleusercontent.com</string>
+    <!--  For Facebook  -->
+    <string name="facebook_app_id">1167906761723321</string>
+    <string name="facebook_app_name">KH-Stay</string>
+
+
 </resources>

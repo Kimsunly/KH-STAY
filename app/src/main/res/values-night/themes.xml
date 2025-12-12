@@ -1,7 +1,36 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.KHSTAY" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <!-- Base application theme for Dark Mode -->
+    <style name="Theme.KHSTAY" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Primary Colors -->
+        <item name="colorPrimary">@color/primary_light</item>
+        <item name="colorPrimaryVariant">@color/primary</item>
+        <item name="colorOnPrimary">@color/black</item>
+
+        <!-- Secondary Colors -->
+        <item name="colorSecondary">@color/accent_blue</item>
+        <item name="colorSecondaryVariant">@color/accent_blue</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <!-- Background & Surface Colors -->
+        <item name="android:colorBackground">@color/text_primary</item>
+        <item name="colorSurface">#2A2A2C</item> <!-- A slightly lighter dark surface -->
+        <item name="colorOnBackground">@color/white</item>
+        <item name="colorOnSurface">@color/white</item>
+
+        <!-- Text & Hint Colors -->
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/text_hint</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+
+        <!-- Status Bar Color -->
+        <item name="android:statusBarColor">@color/text_primary</item>
+        <!-- Makes status bar icons (clock, battery) light for visibility on dark background -->
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Error Color -->
+        <item name="colorError">@color/error_red</item>
+        <item name="colorOnError">@color/white</item>
+
     </style>
 </resources>
