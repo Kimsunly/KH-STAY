@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1954870184",
+    "project_id": "kh-stay",
+    "storage_bucket": "kh-stay.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1954870184:android:364a0a3a91a3a2a47ba39d",
+        "android_client_info": {
+          "package_name": "com.khstay.myapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChigfcx-0r3-vbkGOWeXC-nD3RfVxnZGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

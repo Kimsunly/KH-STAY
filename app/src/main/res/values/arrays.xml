@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="sort_options">
+        <item>Newest</item>
+        <item>Price: Low to High</item>
+        <item>Price: High to Low</item>
+        <item>Nearest</item>
+    </string-array>
+
+    <string-array name="popular_filters">
+        <item>All</item>
+        <item>Villa</item>
+        <item>Condo</item>
+        <item>Room</item>
+    </string-array>
+
+</resources>
