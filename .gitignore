@@ -1,15 +1,61 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+gitignore
+# ===============================================
+# Android Studio & Gradle
+# ===============================================
+# Generated build files
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+/build/
+/app/build/
+/captures/
+.gradle/
+gen/
+
+# Local configuration files (contains machine-specific paths)
 local.properties
+
+# Log files
+*.log
+
+# IDE files & caches
+*.iml
+.idea/
+.DS_Store
+
+# Gradle-generated files
+/gradle/
+!/gradle/wrapper/gradle-wrapper.jar
+!/gradle-wrapper.properties
+!/gradlew
+!/gradlew.bat
+
+# Native build files
+.cxx/
+.externalNativeBuild/
+
+# ===============================================
+# Sensitive Information (VERY IMPORTANT)
+# ===============================================
+# Google Services file (contains API keys and project IDs)
+google-services.json
+
+# If you ever create a file for API keys, ignore it
+secrets.properties
+api_keys.xml
+
+# ===============================================
+# Keystore files (Private keys for signing your app)
+# ===============================================
+*.jks
+*.keystore
+
+# ===============================================
+# Other Generated Files
+# ===============================================
+*.hprof
+*.snapshot
+*.exec
+*.ec
