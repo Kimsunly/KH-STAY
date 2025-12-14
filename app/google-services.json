@@ -12,7 +12,20 @@
           "package_name": "com.khstay.myapplication"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1954870184-pfom8e73dnfchor44288v9e0u1coqkjj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.khstay.myapplication",
+            "certificate_hash": "ca8287b82e97093dae39aa1b8a633e8cf4afcbdd"
+          }
+        },
+        {
+          "client_id": "1954870184-pm17is8m5pbeudvnbi2veecf6mffrcrd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyChigfcx-0r3-vbkGOWeXC-nD3RfVxnZGg"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1954870184-pm17is8m5pbeudvnbi2veecf6mffrcrd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

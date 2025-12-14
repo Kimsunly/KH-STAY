@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     // ============================
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // This line reads your menu XML and puts it on the toolbar
         getMenuInflater().inflate(R.menu.top_app_bar_menu, menu);
         return true;
     }
