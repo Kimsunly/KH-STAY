@@ -7,13 +7,13 @@ plugins {
 
 android {
     namespace = "com.khstay.myapplication"
-    compileSdk {
-        version = release(36)
-    }
+    // --- FIX: Use the latest STABLE SDK version ---
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.khstay.myapplication"
         minSdk = 24
+        // --- FIX: Target the latest STABLE SDK version ---
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -31,35 +31,38 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        // You can upgrade this to Java 17, which is the modern standard for API 34
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
 dependencies {
-    // Firebase BOM manages versions automatically
-    implementation(platform("com.google.firebase:firebase-bom:32.2.2"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx")
-    implementation("com.google.firebase:firebase-storage-ktx")
-
-    // Google Sign-In
-    implementation("com.google.android.gms:play-services-auth:20.7.0")
-
-    // Facebook Login
-    implementation("com.facebook.android:facebook-login:16.0.1")
-
-    // AndroidX + Material
+    // Core Android libraries
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
 
-    // Testing
+    // ===== ADD THIS LINE FOR ONBOARDING =====
+    implementation("androidx.viewpager:viewpager:1.0.0")
+
+    // Firebase BOM
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+
+    // Third-party authentications
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    implementation("com.facebook.android:facebook-login:16.3.0")
+
+    // Testing libraries
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
+
 
 
 

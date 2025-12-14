@@ -61,8 +61,9 @@
     <!--  For Google  -->
     <string name="default_web_client_id">1954870184-pm17is8m5pbeudvnbi2veecf6mffrcrd.apps.googleusercontent.com</string>
     <!--  For Facebook  -->
-    <string name="facebook_app_id">1167906761723321</string>
-    <string name="facebook_app_name">KH-Stay</string>
+    <string name="facebook_app_id">1032543132368872</string>
+    <string name="facebook_client_token">ea25cb6001958ac40b594229d9efb712</string>
+    <string name="facebook_app_name">KH-STAY</string>
 
 
 </resources>
