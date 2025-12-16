@@ -1,14 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.rental.MyRentFragment">
+    android:orientation="vertical"
+    android:background="@color/background_light">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <!-- Tab Navigation - Chips -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_active"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/active_status"
+            android:textSize="14sp"
+            android:checked="true"
+            android:checkable="true"
+            android:layout_marginEnd="8dp"
+            app:chipBackgroundColor="@color/primary"
+            app:chipStrokeColor="@color/primary"
+            android:textColor="@color/white" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_pending"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/pending_status"
+            android:textSize="14sp"
+            android:checkable="true"
+            android:layout_marginEnd="8dp"
+            app:chipBackgroundColor="@color/border_color"
+            app:chipStrokeColor="@color/border_color"
+            android:textColor="@color/text_hint" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_archived"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/history_status"
+            android:textSize="14sp"
+            android:checkable="true"
+            app:chipBackgroundColor="@color/border_color"
+            app:chipStrokeColor="@color/border_color"
+            android:textColor="@color/text_hint" />
+
+    </LinearLayout>
+
+    <!-- Rentals RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_rentals"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
+        android:clipToPadding="false"
+        android:background="@color/background_light" />
 
-</FrameLayout>
+</LinearLayout>
