@@ -65,5 +65,9 @@
     <string name="facebook_client_token">ea25cb6001958ac40b594229d9efb712</string>
     <string name="facebook_app_name">KH-STAY</string>
 
+    <!--MyRental-->
+    <string name="active_status">Active</string>
+    <string name="pending_status">Pending</string>
+    <string name="history_status">History</string>
 
 </resources>
