@@ -1,14 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.profile.ProfileFragment">
+    android:background="#F5F5F5"
+    android:fillViewport="true">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:padding="24dp">
 
-</FrameLayout>
+        <!-- Back Button -->
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Back"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Profile Picture FrameLayout -->
+        <FrameLayout
+            android:id="@+id/profilePictureFrame"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            android:layout_marginTop="16dp">
+
+            <ImageView
+                android:id="@+id/profileImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_profile"
+                android:scaleType="centerCrop"
+                android:background="@drawable/circle_background"
+                android:clipToOutline="true" />
+
+            <!-- Camera Icon -->
+            <ImageView
+                android:id="@+id/cameraIcon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="bottom|end"
+                android:src="@drawable/ic_camera"
+                android:background="@drawable/orange_circle"
+                android:padding="6dp" />
+        </FrameLayout>
+
+        <!-- Name -->
+        <TextView
+            android:id="@+id/profileName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Guest"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#000000"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profilePictureFrame"
+            android:layout_marginTop="12dp" />
+
+        <!-- Email -->
+        <TextView
+            android:id="@+id/profileEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="guest@gmail.com"
+            android:textSize="14sp"
+            android:textColor="#8A8A8A"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profileName"
+            android:layout_marginTop="4dp" />
+
+        <!-- Divider -->
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profileEmail"
+            android:layout_marginTop="24dp" />
+
+        <!-- Menu Options (Vertical Chain) -->
+        <include
+            android:id="@+id/settingsItem"
+            layout="@layout/profile_menu_item"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/divider"
+            android:layout_marginTop="0dp" />
+
+        <include
+            android:id="@+id/paymentItem"
+            layout="@layout/profile_menu_item"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/settingsItem" />
+
+        <include
+            android:id="@+id/notificationItem"
+            layout="@layout/profile_menu_item"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/paymentItem" />
+
+        <include
+            android:id="@+id/recentViewedItem"
+            layout="@layout/profile_menu_item"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/notificationItem" />
+
+        <include
+            android:id="@+id/aboutItem"
+            layout="@layout/profile_menu_item"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/recentViewedItem" />
+
+        <!-- Sign Out -->
+        <TextView
+            android:id="@+id/signOut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign Out"
+            android:textColor="#FF6B4A"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/aboutItem"
+            android:layout_marginTop="36dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
