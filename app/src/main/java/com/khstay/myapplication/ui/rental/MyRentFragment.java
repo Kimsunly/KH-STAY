@@ -101,7 +101,7 @@ public class MyRentFragment extends Fragment {
                 "Sen Sok District, Phnom Penh, Cambodia",
                 "600",
                 "Active",
-                R.drawable.ic_placeholder
+                R.drawable.house_image
         ));
 
         allRentalsList.add(new Rental(
@@ -110,7 +110,7 @@ public class MyRentFragment extends Fragment {
                 "Sen Sok District, Phnom Penh, Cambodia",
                 "600",
                 "Active",
-                R.drawable.ic_placeholder
+                R.drawable.house_image
         ));
 
         allRentalsList.add(new Rental(
@@ -119,7 +119,7 @@ public class MyRentFragment extends Fragment {
                 "Sen Sok District, Phnom Penh, Cambodia",
                 "600",
                 "Active",
-                R.drawable.ic_placeholder
+                R.drawable.house_image
         ));
 
         allRentalsList.add(new Rental(
@@ -128,7 +128,7 @@ public class MyRentFragment extends Fragment {
                 "Tuol Kouk District, Phnom Penh, Cambodia",
                 "450",
                 "Pending",
-                R.drawable.ic_placeholder
+                R.drawable.house_image
         ));
 
         allRentalsList.add(new Rental(
@@ -137,7 +137,7 @@ public class MyRentFragment extends Fragment {
                 "Boeng Keng Kong I District, Phnom Penh, Cambodia",
                 "1200",
                 "Archived",
-                R.drawable.ic_placeholder
+                R.drawable.house_image
         ));
 
         // Initial filter
