@@ -31,6 +31,9 @@ local.properties
 !/gradle-wrapper.properties
 !/gradlew
 !/gradlew.bat
+/local.properties
+# Local Gradle properties with secrets
+gradle.properties
 
 # Native build files
 .cxx/
@@ -41,6 +44,7 @@ local.properties
 # ===============================================
 # Google Services file (contains API keys and project IDs)
 google-services.json
+
 
 # If you ever create a file for API keys, ignore it
 secrets.properties

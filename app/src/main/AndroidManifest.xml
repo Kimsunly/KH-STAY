@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:allowBackup="true"
@@ -15,6 +17,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.KHSTAY">
 
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="${facebook_app_id}" />
+        <meta-data
+            android:name="com.facebook.sdk.ClientToken"
+            android:value="${facebook_client_token}" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
+        <activity
+            android:name=".ui.rental.RentalHouseDetailActivity"
+            android:exported="false"
+            android:screenOrientation="fullSensor" />
+
+
+
         <!-- ===== ONBOARDING ACTIVITIES ===== -->
         <!-- SplashActivity is now the LAUNCHER -->
         <activity
@@ -23,31 +43,24 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".ui.auth.OnboardingActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-
-        <!-- ===== AUTH ACTIVITIES ===== -->
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- ===== AUTH ACTIVITIES ===== -->
         <!-- Removed LAUNCHER from LoginActivity -->
         <activity
             android:name=".ui.auth.LoginActivity"
             android:exported="false" />
-
         <activity
             android:name=".ui.auth.RegisterActivity"
-            android:exported="false" />
-
-        <!-- ===== MAIN ACTIVITY ===== -->
+            android:exported="false" /> <!-- ===== MAIN ACTIVITY ===== -->
         <activity
             android:name=".MainActivity"
-            android:exported="false" />
-
-        <!-- ===== FACEBOOK SDK CONFIGURATION ===== -->
+            android:exported="false" /> <!-- ===== FACEBOOK SDK CONFIGURATION ===== -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
@@ -66,7 +79,6 @@
             android:name="com.facebook.FacebookContentProvider"
             android:authorities="com.facebook.app.FacebookContentProvider[YOUR_APP_ID]"
             android:exported="true" />
-
     </application>
 
 </manifest>

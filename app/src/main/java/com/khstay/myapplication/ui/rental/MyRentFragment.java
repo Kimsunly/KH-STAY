@@ -1,57 +1,66 @@
+
 package com.khstay.myapplication.ui.rental;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.khstay.myapplication.R;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.chip.Chip;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.khstay.myapplication.R;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyRentFragment extends Fragment {
 
+    private static final String TAG = "MyRentFragment";
+
     private RecyclerView rvRentals;
     private RentalAdapter rentalAdapter;
     private Chip chipActive, chipPending, chipArchived;
-    private List<Rental> allRentalsList;
+
+    private final List<Rental> visibleRentals = new ArrayList<>();
     private String currentTab = "active";
+
+    private FirebaseFirestore db;
+    private FirebaseAuth auth;
 
     public MyRentFragment() {}
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_my_rent, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Initialize views
-        rvRentals = view.findViewById(R.id.rv_rentals);
-        chipActive = view.findViewById(R.id.chip_active);
+        rvRentals   = view.findViewById(R.id.rv_rentals);
+        chipActive  = view.findViewById(R.id.chip_active);
         chipPending = view.findViewById(R.id.chip_pending);
-        chipArchived = view.findViewById(R.id.chip_archived);
+        chipArchived= view.findViewById(R.id.chip_archived);
 
-        // Initialize data list
-        allRentalsList = new ArrayList<>();
+        db   = FirebaseFirestore.getInstance();
+        auth = FirebaseAuth.getInstance();
 
-        // Setup RecyclerView
         setupRecyclerView();
-
-        // Setup chip listeners
         setupChipListeners();
 
-        // Load rentals data
-        loadRentals();
+        updateChipStates(chipActive);
+        fetchRentalsForTab(currentTab);
     }
 
     private void setupRecyclerView() {
@@ -64,24 +73,22 @@ public class MyRentFragment extends Fragment {
         chipActive.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 currentTab = "active";
-                filterRentals("Active");
                 updateChipStates(chipActive);
+                fetchRentalsForTab(currentTab);
             }
         });
-
         chipPending.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 currentTab = "pending";
-                filterRentals("Pending");
                 updateChipStates(chipPending);
+                fetchRentalsForTab(currentTab);
             }
         });
-
         chipArchived.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 currentTab = "archived";
-                filterRentals("Archived");
                 updateChipStates(chipArchived);
+                fetchRentalsForTab(currentTab);
             }
         });
     }
@@ -93,72 +100,37 @@ public class MyRentFragment extends Fragment {
         selectedChip.setChecked(true);
     }
 
-    private void loadRentals() {
-        // Add sample data
-        allRentalsList.add(new Rental(
-                1,
-                "Modern 3-Bedroom House with Garden",
-                "Sen Sok District, Phnom Penh, Cambodia",
-                "600",
-                "Active",
-                R.drawable.house_image
-        ));
+    private void fetchRentalsForTab(String statusKey) {
+        String uid = auth.getCurrentUser() != null ? auth.getCurrentUser().getUid() : null;
 
-        allRentalsList.add(new Rental(
-                2,
-                "Modern 3-Bedroom House with Garden",
-                "Sen Sok District, Phnom Penh, Cambodia",
-                "600",
-                "Active",
-                R.drawable.house_image
-        ));
+        Query query = db.collection("rental_houses")
+                .whereEqualTo("status", statusKey)
+                .orderBy("createdAt", Query.Direction.DESCENDING);
 
-        allRentalsList.add(new Rental(
-                3,
-                "Modern 3-Bedroom House with Garden",
-                "Sen Sok District, Phnom Penh, Cambodia",
-                "600",
-                "Active",
-                R.drawable.house_image
-        ));
+        // OPTIONAL: show only "my" rentals
+        // if (uid != null) query = query.whereEqualTo("ownerId", uid);
 
-        allRentalsList.add(new Rental(
-                4,
-                "Cozy 2-Bedroom Apartment",
-                "Tuol Kouk District, Phnom Penh, Cambodia",
-                "450",
-                "Pending",
-                R.drawable.house_image
-        ));
-
-        allRentalsList.add(new Rental(
-                5,
-                "Luxury Villa with Pool",
-                "Boeng Keng Kong I District, Phnom Penh, Cambodia",
-                "1200",
-                "Archived",
-                R.drawable.house_image
-        ));
-
-        // Initial filter
-        filterRentals("Active");
+        query.get()
+                .addOnSuccessListener(qs -> {
+                    visibleRentals.clear();
+                    for (DocumentSnapshot d : qs.getDocuments()) {
+                        Rental r = d.toObject(Rental.class);
+                        if (r != null) { r.setId(d.getId()); visibleRentals.add(r); }
+                    }
+                    rentalAdapter.updateList(new ArrayList<>(visibleRentals));
+                    Log.d(TAG, "Loaded " + visibleRentals.size() + " rentals for status=" + statusKey);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Fetch failed: " + e.getMessage(), e);
+                    visibleRentals.clear();
+                    rentalAdapter.updateList(new ArrayList<>(visibleRentals));
+                });
     }
 
-    private void filterRentals(String status) {
-        List<Rental> filteredList = new ArrayList<>();
-
-        for (Rental rental : allRentalsList) {
-            if (rental.getStatus().equalsIgnoreCase(status)) {
-                filteredList.add(rental);
-            }
-        }
-
-        rentalAdapter.updateList(filteredList);
-    }
-
-    // Method to set rental data from outside (if needed)
     public void setRentalsData(List<Rental> rentals) {
-        this.allRentalsList = rentals;
-        filterRentals("Active");
+        visibleRentals.clear();
+        visibleRentals.addAll(rentals);
+        rentalAdapter.updateList(new ArrayList<>(visibleRentals));
     }
 }
+

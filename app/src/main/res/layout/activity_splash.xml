@@ -12,21 +12,12 @@
         android:gravity="center">
 
         <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/ic_home"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:layout_marginBottom="24dp"
             android:background="@drawable/circle_white"
             android:padding="24dp"
-            android:layout_marginBottom="24dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="RentHub"
-            android:textSize="48sp"
-            android:textColor="@android:color/white"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
+            android:src="@drawable/kh_stay_logo_resized_circle" />
 
         <TextView
             android:layout_width="wrap_content"

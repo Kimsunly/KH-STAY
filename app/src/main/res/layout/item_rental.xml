@@ -21,13 +21,15 @@
             android:scaleType="centerCrop"
             android:adjustViewBounds="false"
             android:background="#E0E0E0"
-            android:contentDescription="Property image"
+            android:contentDescription="@string/content_desc_property_image"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:src="@drawable/house_image" />
+            xmlns:tools="http://schemas.android.com/tools"
+            tools:src="@drawable/house_image"
+            />
 
-        <!-- Favorite Button (for SearchFragment) -->
+        <!-- Favorite Button (for SearchFragment; hidden by default) -->
         <ImageView
             android:id="@+id/iv_favorite"
             android:layout_width="32dp"
@@ -36,7 +38,7 @@
             android:padding="6dp"
             android:background="@drawable/bg_favorite_button"
             android:src="@drawable/ic_favorite_outline"
-            android:contentDescription="Add to favorites"
+            android:contentDescription="@string/content_desc_favorite"
             android:visibility="gone"
             app:layout_constraintTop_toTopOf="@id/iv_property"
             app:layout_constraintEnd_toEndOf="@id/iv_property"
@@ -67,21 +69,21 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Modern 3-Bedroom House"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="#212121"
                     android:maxLines="2"
-                    android:ellipsize="end" />
+                    android:ellipsize="end"
+                    tools:text="Modern 3-Bedroom House" />
 
-                <!-- More Button (for MyRentFragment) -->
+                <!-- More Button (for MyRentFragment; hidden by default) -->
                 <ImageButton
                     android:id="@+id/btn_more"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_more_vert"
-                    android:contentDescription="More options"
+                    android:contentDescription="@string/content_desc_more_options"
                     android:padding="4dp"
                     android:visibility="gone"
                     tools:visibility="visible" />
@@ -99,7 +101,7 @@
                     android:layout_width="14dp"
                     android:layout_height="14dp"
                     android:src="@drawable/ic_location"
-                    android:contentDescription="Location"
+                    android:contentDescription="@string/content_desc_location_icon"
                     app:tint="#757575" />
 
                 <TextView
@@ -107,23 +109,23 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="4dp"
-                    android:text="Sen Sok District, Phnom Penh"
                     android:textSize="13sp"
                     android:textColor="#757575"
                     android:maxLines="1"
-                    android:ellipsize="end" />
+                    android:ellipsize="end"
+                    tools:text="Sen Sok District, Phnom Penh" />
             </LinearLayout>
 
-            <!-- Bed & Bath Info (for SearchFragment) -->
+            <!-- Bed & Bath Info (optional; hidden by default) -->
             <TextView
                 android:id="@+id/tv_bed_bath"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="3 bed • 2 bath"
                 android:textSize="13sp"
                 android:textColor="#757575"
                 android:visibility="gone"
+                tools:text="3 Beds · 2 Baths"
                 tools:visibility="visible" />
 
             <!-- Price and Status Row -->
@@ -139,17 +141,16 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="$600/month"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="@color/primary" />
+                    android:textColor="@color/primary"
+                    tools:text="$600/month" />
 
-                <!-- Status Badge (for MyRentFragment) -->
+                <!-- Status Badge (hidden by default; shown in MyRentFragment) -->
                 <TextView
                     android:id="@+id/tv_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Active"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:paddingStart="12dp"
@@ -159,6 +160,7 @@
                     android:background="@drawable/bg_status_active"
                     android:textColor="@color/success_green"
                     android:visibility="gone"
+                    tools:text="Active"
                     tools:visibility="visible" />
             </LinearLayout>
 

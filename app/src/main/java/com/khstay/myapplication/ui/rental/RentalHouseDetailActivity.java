@@ -1,12 +1,8 @@
-package com.khstay.myapplication;
+package com.khstay.myapplication.ui.rental;
 
 
 import android.view.View; // avoids "Cannot resolve symbol View" in some cases
 
-import com.khstay.myapplication.ui.rental.Rental; // if Activity is not in the same package
-import com.google.android.gms.maps.*;
-import com.google.android.gms.maps.model.*;
-import com.google.firebase.firestore.*;
 import androidx.annotation.NonNull;
 
 import android.Manifest;
@@ -22,7 +18,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;

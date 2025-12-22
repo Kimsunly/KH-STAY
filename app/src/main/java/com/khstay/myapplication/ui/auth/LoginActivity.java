@@ -45,10 +45,15 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // --- FIX: Set the content view ONCE at the very beginning ---
-        setContentView(R.layout.activity_login);
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            // User already logged in
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+            return;
+        }
 
-        // --- FIX: All initializations happen AFTER setContentView ---
+        setContentView(R.layout.activity_login);
         initViews();
         mAuth = FirebaseAuth.getInstance();
 

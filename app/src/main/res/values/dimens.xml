@@ -20,5 +20,6 @@
     <dimen name="corner_radius_large">16dp</dimen>
 
     <dimen name="card_elevation">3dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
 
 </resources>

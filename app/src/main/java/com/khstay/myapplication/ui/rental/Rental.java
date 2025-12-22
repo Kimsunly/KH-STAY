@@ -1,219 +1,138 @@
+
 package com.khstay.myapplication.ui.rental;
 
+import androidx.annotation.Keep;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.IgnoreExtraProperties;
+
+/**
+ * Unified model used by Firestore and UI.
+ * Includes all getters/setters your Activity and adapters call.
+ */
+@Keep
+@IgnoreExtraProperties
 public class Rental {
-    private int id;
+
+    // ===== Firestore fields =====
+    private String id;               // set from snapshot.getId()
     private String title;
     private String location;
-    private String price;
-    private String status;
-    private int imageResId;
+    private Double price;            // Firestore Number -> Double
+    private String status;           // "active" | "pending" | "archived"
+    private Boolean isPopular;
+    private Timestamp createdAt;
+    private String imageUrl;
+    private Double latitude;
+    private Double longitude;
+    private String ownerId;
 
-    // Additional fields for search functionality
-    private String category;        // For category filtering (Toul Kok, Dangkao, etc.)
-    private String description;     // For search description
-    private int bedrooms;           // Number of bedrooms
-    private int bathrooms;          // Number of bathrooms
-    private boolean isFavorite;     // Favorite status
-    private String imageUrl;        // For online images (optional)
+    // Optional Firestore field
+    private String category;
 
-    // Constructor for MyRentFragment (existing usage)
-    public Rental(int id, String title, String location, String price, String status, int imageResId) {
-        this.id = id;
+    // ===== UI-only helpers =====
+    private Integer imageResId;      // local drawable fallback
+    private Integer bedrooms;
+    private Integer bathrooms;
+    private Boolean favorite;        // heart toggle in UI
+    private String description;      // detail text
+
+    /** REQUIRED by Firestore */
+    public Rental() { }
+
+    /** UI sample constructor (used in local dummy data) */
+    public Rental(int idInt, String title, String location,
+                  String priceText, String statusText, int imageResId) {
+        this.id = String.valueOf(idInt);
         this.title = title;
         this.location = location;
-        this.price = price;
-        this.status = status;
+        try { this.price = Double.valueOf(priceText); } catch (Exception e) { this.price = 0.0; }
+        this.status = statusText;
         this.imageResId = imageResId;
-        this.category = extractCategoryFromLocation(location);
-        this.description = "";
-        this.bedrooms = 1;
-        this.bathrooms = 1;
-        this.isFavorite = false;
-        this.imageUrl = "";
+        this.bedrooms = 0;
+        this.bathrooms = 0;
+        this.favorite = false;
     }
 
-    // Full constructor for SearchFragment with all fields
-    public Rental(int id, String title, String location, String price, String status,
-                  int imageResId, String category, String description,
-                  int bedrooms, int bathrooms) {
-        this.id = id;
+    /** UI constructor used by SearchFragment */
+    public Rental(int idInt, String title, String location, String priceText, String statusText,
+                  int imageResId, String imageUrl, String description, int bedrooms, int bathrooms) {
+        this.id = String.valueOf(idInt);
         this.title = title;
         this.location = location;
-        this.price = price;
-        this.status = status;
+        try { this.price = Double.valueOf(priceText); } catch (Exception e) { this.price = 0.0; }
+        this.status = statusText;
         this.imageResId = imageResId;
-        this.category = category;
-        this.description = description;
-        this.bedrooms = bedrooms;
-        this.bathrooms = bathrooms;
-        this.isFavorite = false;
-        this.imageUrl = "";
-    }
-
-    // Constructor with URL support
-    public Rental(int id, String title, String location, String price, String status,
-                  String imageUrl, String category, String description,
-                  int bedrooms, int bathrooms) {
-        this.id = id;
-        this.title = title;
-        this.location = location;
-        this.price = price;
-        this.status = status;
-        this.imageResId = 0;
         this.imageUrl = imageUrl;
-        this.category = category;
         this.description = description;
         this.bedrooms = bedrooms;
         this.bathrooms = bathrooms;
-        this.isFavorite = false;
+        this.favorite = false;
     }
 
-    // Helper method to extract category from location string
-    private String extractCategoryFromLocation(String location) {
-        if (location == null) return "All";
+    // ===== Getters & Setters (Activity uses these) =====
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-        location = location.toLowerCase();
-        if (location.contains("toul kok") || location.contains("tuol kouk")) {
-            return "Toul Kok";
-        } else if (location.contains("psar derm tkev") || location.contains("psar deum thkov")) {
-            return "Psar Derm Tkev";
-        } else if (location.contains("dangkao") || location.contains("dang kao")) {
-            return "Dangkao";
-        } else if (location.contains("chamkar mon") || location.contains("chamkarmorn")) {
-            return "Chamkar Mon";
-        } else if (location.contains("mean chey") || location.contains("meanchey")) {
-            return "Mean Chey";
-        } else if (location.contains("sen sok")) {
-            return "Sen Sok";
-        } else if (location.contains("boeng keng kong")) {
-            return "Boeng Keng Kong";
-        } else {
-            return "All";
-        }
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    // Getters
-    public int getId() {
-        return id;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public String getTitle() {
-        return title;
-    }
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
 
-    public String getLocation() {
-        return location;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public String getPrice() {
-        return price;
-    }
+    public Boolean getIsPopular() { return isPopular; }
+    public void setIsPopular(Boolean isPopular) { this.isPopular = isPopular; }
 
-    public String getStatus() {
-        return status;
-    }
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
-    public int getImageResId() {
-        return imageResId;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public String getCategory() {
-        return category;
-    }
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
 
-    public String getDescription() {
-        return description;
-    }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 
-    public int getBedrooms() {
-        return bedrooms;
-    }
+    public String getOwnerId() { return ownerId; }
+    public void setOwnerId(String ownerId) { this.ownerId = ownerId; }
 
-    public int getBathrooms() {
-        return bathrooms;
-    }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
-    public boolean isFavorite() {
-        return isFavorite;
-    }
+    public int getImageResId() { return imageResId != null ? imageResId : 0; }
+    public void setImageResId(Integer imageResId) { this.imageResId = imageResId; }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
+    public int getBedrooms() { return bedrooms != null ? bedrooms : 0; }
+    public void setBedrooms(Integer bedrooms) { this.bedrooms = bedrooms; }
 
-    // Setters
-    public void setId(int id) {
-        this.id = id;
-    }
+    public int getBathrooms() { return bathrooms != null ? bathrooms : 0; }
+    public void setBathrooms(Integer bathrooms) { this.bathrooms = bathrooms; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public boolean isFavorite() { return favorite != null && favorite; }
+    public void setFavorite(boolean favorite) { this.favorite = favorite; }
 
-    public void setLocation(String location) {
-        this.location = location;
-        this.category = extractCategoryFromLocation(location);
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setPrice(String price) {
-        this.price = price;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public void setImageResId(int imageResId) {
-        this.imageResId = imageResId;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setBedrooms(int bedrooms) {
-        this.bedrooms = bedrooms;
-    }
-
-    public void setBathrooms(int bathrooms) {
-        this.bathrooms = bathrooms;
-    }
-
-    public void setFavorite(boolean favorite) {
-        isFavorite = favorite;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    // Utility methods
-    public String getFormattedPrice() {
-        return "$" + price + "/month";
-    }
-
+    // Optional helper
     public String getBedroomBathroomText() {
-        return bedrooms + " bed • " + bathrooms + " bath";
+        int b = getBedrooms(), ba = getBathrooms();
+        if (b <= 0 && ba <= 0) return "";
+        String bedText = b > 0 ? (b + (b == 1 ? " Bed" : " Beds")) : "";
+        String bathText = ba > 0 ? (ba + (ba == 1 ? " Bath" : " Baths")) : "";
+        return (!bedText.isEmpty() && !bathText.isEmpty()) ? (bedText + " · " + bathText) : (bedText + bathText);
     }
 
-    // Check if has online image URL
+
     public boolean hasImageUrl() {
-        return imageUrl != null && !imageUrl.isEmpty();
+        return imageUrl != null && !imageUrl.trim().isEmpty();
     }
 
-    @Override
-    public String toString() {
-        return "Rental{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", location='" + location + '\'' +
-                ", price='" + price + '\'' +
-                ", category='" + category + '\'' +
-                ", status='" + status + '\'' +
-                '}';
-    }
 }
