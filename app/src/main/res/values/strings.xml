@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- App -->
     <string name="app_name">KH-Stay</string>
 
@@ -21,12 +23,12 @@
     <string name="already_have_account">Already have an account?</string>
 
     <!-- Home -->
+    <string name="hey_there">KH-STAY WElCOME !!</string>
     <string name="home_greeting">Master BL4CKWIDOW</string>
-    <string name="home_subtitle">Let’s find you a home so you won’t be homeless</string>
+    <string name="home_subtitle">Let’s find your best stay with best price.</string>
     <string name="search_placeholder">Search for places</string>
     <string name="most_popular">Most Popular</string>
     <string name="nearby_location">Nearby your location</string>
-<!--    <string name="view_more">More</string>-->
 
     <!-- Bottom Navigation -->
     <string name="nav_home">Home</string>
@@ -55,57 +57,88 @@
 
     <!-- Profile -->
     <string name="profile_title">Profile</string>
-    <string name="logout">Logout</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <!--  For Google  -->
-    <string name="default_web_client_id">1954870184-pm17is8m5pbeudvnbi2veecf6mffrcrd.apps.googleusercontent.com</string>
-    <!--  For Facebook  -->
-    <string name="facebook_app_id">1032543132368872</string>
-    <string name="facebook_client_token">ea25cb6001958ac40b594229d9efb712</string>
-    <string name="facebook_app_name">KH-STAY</string>
+    <string name="profile">Profile</string>
+    <string name="logout">Signed out successfully</string>
 
-    <!--MyRental-->
+    <!-- MyRental statuses -->
     <string name="active_status">Active</string>
     <string name="pending_status">Pending</string>
     <string name="history_status">History</string>
 
-
-    <!-- Add these if missing -->
-<!--    <string name="content_desc_property_image">Property image</string>-->
-<!--    <string name="content_desc_favorite">Add to favorites</string>-->
-<!--    <string name="content_desc_more_options">More options</string>-->
-<!--    <string name="content_desc_location_icon">Location icon</string>-->
-    <!-- Strings used for fragments for navigation -->
+    <!-- Navigation fragments (template) -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <!-- Accessibility: content descriptions -->
+    <string name="content_desc_back">Back</string>
+    <string name="content_desc_property_image">Property image</string>
+    <string name="content_desc_favorite">Add to favorites</string>
+    <string name="content_desc_location_icon">Location icon</string>
+    <string name="content_desc_map_preview">Map preview</string>
+    <string name="content_desc_owner_avatar">Owner avatar</string>
+    <string name="content_desc_call_owner">Call owner</string>
+    <string name="content_desc_chat_owner">Chat with owner</string>
+    <string name="content_desc_status_badge">Status badge</string>
+    <string name="content_desc_more_options">More options</string>
+    <string name="content_desc_menu_icon">Menu icon</string>
+    <string name="content_desc_chevron">Navigate</string>
+
+    <!-- Labels / actions -->
+    <string name="label_location">Location</string>
+    <string name="view_more">View more</string>
+    <string name="view_less">View less</string>
+    <string name="book_now">Book Now</string>
+    <string name="owner_unknown">Unknown Owner</string>
+    <string name="owner_role">Owner</string>
+
+    <!-- Price formatting -->
+    <string name="price_template">%1$d$/month</string>
+
+    <!-- Profile screen specifics -->
+    <string name="change_photo">Change Photo</string>
+    <string name="label_sign_out">Sign Out</string>
+    <string name="profile_name_placeholder">User</string>
+    <string name="profile_email_placeholder">user@email.com</string>
+
+    <!-- Menu reusable row -->
+    <string name="menu_placeholder">Menu</string>
+
+    <!-- Profile menu labels (used in ProfileFragment.java) -->
+    <string name="label_settings">Settings</string>
+    <string name="label_payment">Payment</string>
+    <string name="label_notification">Notification</string>
+    <string name="label_recent_viewed">Recent Viewed</string>
+    <string name="label_about">About</string>
+    <!-- Other strings you might have -->
+    <string name="content_desc_profile_image">Profile image description</string>
+
+    <!-- MyRentFragment -->
+<!--    <string name="active_status">Active</string>-->
+<!--    <string name="pending_status">Pending</string>-->
+<!--    <string name="history_status">Archived</string>-->
+    <string name="add_property">Add Property</string>
+    <string name="empty_state_default">No properties found</string>
+
+    <!-- Property Menu -->
+    <string name="view_details">View Details</string>
+    <string name="view_bookings">View Booking Requests</string>
+    <string name="archive_property">Archive Property</string>
+    <string name="activate_property">Reactivate Property</string>
+    <string name="delete_property">Delete Property</string>
 
 
-        <!-- Content descriptions (accessibility) -->
-        <string name="content_desc_property_image">Property image</string>
-        <string name="content_desc_favorite">Add to favorites</string>
-        <string name="content_desc_back">Go back</string>
-        <string name="content_desc_location_icon">Location icon</string>
-        <string name="content_desc_map_preview">Map preview</string>
-        <string name="content_desc_owner_avatar">Owner avatar</string>
-        <string name="content_desc_call_owner">Call owner</string>
-        <string name="content_desc_chat_owner">Chat with owner</string>
+    <string name="login_first">Please login first</string>
+    <string name="profile_picture_updated">Profile picture updated!</string>
 
-        <!-- Labels -->
-        <string name="label_location">Location</string>
-        <string name="view_more">View more</string>
-        <string name="view_less">View less</string>
-        <string name="book_now">Book Now</string>
-        <string name="owner_unknown">Unknown Owner</string>
-        <string name="owner_role">Owner</string>
-        <string name="content_desc_more_options">More options</string>
-        <!-- Price formatting -->
-        <string name="price_template">%1$d$/month</string>
-
-
-
+    <string name="menu_edit_profile">Edit Profile</string>
+    <string name="menu_booking_requests">Booking Requests</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_payment">Payment</string>
+    <string name="menu_notification">Notification</string>
+    <string name="menu_recent_viewed">Recent Viewed</string>
+    <string name="menu_favorites">Favorites</string>
+    <string name="menu_about">About</string>
 
 </resources>

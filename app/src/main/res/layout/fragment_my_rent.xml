@@ -11,10 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/background"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
+        android:padding="16dp"
         android:orientation="horizontal">
 
         <com.google.android.material.chip.Chip
@@ -22,50 +19,86 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/active_status"
-            android:textSize="14sp"
-            android:checked="true"
-            android:checkable="true"
             android:layout_marginEnd="8dp"
-            app:chipBackgroundColor="@color/primary"
-            app:chipStrokeColor="@color/primary"
-            android:textColor="@color/white" />
+            android:text="Active"
+            android:checked="true"
+            android:checkable="true" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_pending"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/pending_status"
-            android:textSize="14sp"
-            android:checkable="true"
             android:layout_marginEnd="8dp"
-            app:chipBackgroundColor="@color/border_color"
-            app:chipStrokeColor="@color/border_color"
-            android:textColor="@color/text_hint" />
+            android:text="Pending"
+            android:checkable="true" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_archived"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/history_status"
-            android:textSize="14sp"
-            android:checkable="true"
-            app:chipBackgroundColor="@color/border_color"
-            app:chipStrokeColor="@color/border_color"
-            android:textColor="@color/text_hint" />
-
+            android:text="Archived"
+            android:checkable="true" />
     </LinearLayout>
 
-    <!-- Rentals RecyclerView -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_rentals"
+    <!-- Content Container -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="8dp"
-        android:paddingBottom="16dp"
-        android:clipToPadding="false"
-        android:background="@color/background_light" />
+        android:layout_height="match_parent">
+
+        <!-- Skeleton Loading -->
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmerLoading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <include layout="@layout/skeleton_rental_item" />
+                <include layout="@layout/skeleton_rental_item" />
+                <include layout="@layout/skeleton_rental_item" />
+            </LinearLayout>
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <!-- Rentals RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_rentals"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="80dp" />
+
+        <!-- Empty State -->
+        <TextView
+            android:id="@+id/tv_empty_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="No properties found"
+            android:textSize="16sp"
+            android:textColor="@color/text_secondary"
+            android:textAlignment="center"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone" />
+
+        <!-- FAB - Add Property -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_property"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_add_category"
+            android:contentDescription="Add Property"
+            app:tint="@android:color/white"
+            app:backgroundTint="@color/primary" />
+    </FrameLayout>
 
 </LinearLayout>

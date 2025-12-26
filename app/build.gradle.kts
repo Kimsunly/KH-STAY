@@ -51,6 +51,9 @@ android {
 }
 
 dependencies {
+    // Shimmer effect for skeleton loading
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -59,6 +62,8 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
+    implementation(libs.firebase.appcheck.debug)
+    implementation(libs.firebase.appcheck.playintegrity)
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation("androidx.viewpager:viewpager:1.0.0")
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))

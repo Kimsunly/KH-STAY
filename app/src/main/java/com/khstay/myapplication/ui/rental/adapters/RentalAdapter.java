@@ -1,5 +1,4 @@
-
-package com.khstay.myapplication.ui.rental;
+package com.khstay.myapplication.ui.rental.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -15,6 +14,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.khstay.myapplication.R;
+import com.khstay.myapplication.ui.rental.model.Rental;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;

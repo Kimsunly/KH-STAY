@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- App -->
     <string name="app_name">KH-Stay</string>
 
@@ -21,12 +23,11 @@
     <string name="already_have_account">មានគណនីរួចហើយ?</string>
 
     <!-- Home -->
-    <string name="home_greeting">សួស្តី Rich Boi, Rith</string>
-    <string name="home_subtitle">សូមស្វែងរកផ្ទះសម្រាប់អ្នក ដើម្បីមិនឱ្យអ្នកគ្មានផ្ទះ</string>
-    <string name="search_placeholder">ស្វែងរកទីតាំង</string>
+    <string name="home_greeting">ស្វាគមន៍</string>
+    <string name="home_subtitle">ស្វែងរកផ្ទះសម្រាប់អ្នក ដើម្បីមិនឲ្យគ្មានផ្ទះ</string>
+    <string name="search_placeholder">ស្វែងរកទីកន្លែង</string>
     <string name="most_popular">ពេញនិយមបំផុត</string>
-    <string name="nearby_location">នៅជិតទីតាំងរបស់អ្នក</string>
-    <string name="view_more">មើលបន្ថែម</string>
+    <string name="nearby_location">ក្បែរទីតាំងរបស់អ្នក</string>
 
     <!-- Bottom Navigation -->
     <string name="nav_home">ទំព័រដើម</string>
@@ -43,17 +44,65 @@
     <string name="popular_title">ពេញនិយមបំផុត</string>
 
     <!-- Filter Screen -->
-    <string name="filter_title">ច្រោះលទ្ធផល</string>
-    <string name="no_results">មិនមានលទ្ធផល</string>
-    <string name="try_another_filter">សាកល្បងស្វែងរកជាមួយតម្រងផ្សេងទៀត</string>
+    <string name="filter_title">ចម្រោះលទ្ធផល</string>
+    <string name="no_results">រកមិនឃើញលទ្ធផល</string>
+    <string name="try_another_filter">សូមសាកល្បងជាមួយការចម្រោះផ្សេងទៀត</string>
 
     <!-- Sort Options -->
     <string name="sort_newest">ថ្មីបំផុត</string>
-    <string name="sort_price_low_high">តម្លៃ: តិចទៅច្រើន</string>
-    <string name="sort_price_high_low">តម្លៃ: ច្រើនទៅតិច</string>
-    <string name="sort_nearest">នៅជិតបំផុត</string>
+    <string name="sort_price_low_high">តម្លៃ: ទាបទៅខ្ពស់</string>
+    <string name="sort_price_high_low">តម្លៃ: ខ្ពស់ទៅទាប</string>
+    <string name="sort_nearest">ជិតបំផុត</string>
 
     <!-- Profile -->
     <string name="profile_title">ប្រវត្តិរូប</string>
-    <string name="logout">ចាកចេញ</string>
+    <string name="profile">ប្រវត្តិរូប</string>
+    <string name="logout">ចេញពីគណនីដោយជោគជ័យ</string>
+
+    <!-- MyRental statuses -->
+    <string name="active_status">សកម្ម</string>
+    <string name="pending_status">កំពុងរង់ចាំ</string>
+    <string name="history_status">ប្រវត្តិ</string>
+
+    <!-- Accessibility: content descriptions -->
+    <string name="content_desc_back">ត្រឡប់ក្រោយ</string>
+    <string name="content_desc_property_image">រូបភាពអចលនទ្រព្យ</string>
+    <string name="content_desc_favorite">បន្ថែមទៅចំណូលចិត្ត</string>
+    <string name="content_desc_location_icon">រូបសញ្ញាទីតាំង</string>
+    <string name="content_desc_map_preview">មើលផែនទី</string>
+    <string name="content_desc_owner_avatar">រូបម្ចាស់</string>
+    <string name="content_desc_call_owner">ទូរស័ព្ទទៅម្ចាស់</string>
+    <string name="content_desc_chat_owner">ជជែកជាមួយម្ចាស់</string>
+    <string name="content_desc_status_badge">ស្លាកស្ថានភាព</string>
+    <string name="content_desc_more_options">ជម្រើសបន្ថែម</string>
+    <string name="content_desc_menu_icon">រូបសញ្ញាម៉ឺនុយ</string>
+    <string name="content_desc_chevron">ទៅមុខ</string>
+
+    <!-- Labels / actions -->
+    <string name="label_location">ទីតាំង</string>
+    <string name="view_more">មើលបន្ថែម</string>
+    <string name="view_less">មើលតិច</string>
+    <string name="book_now">កក់ឥឡូវនេះ</string>
+    <string name="owner_unknown">ម្ចាស់មិនស្គាល់</string>
+    <string name="owner_role">ម្ចាស់</string>
+
+    <!-- Price formatting -->
+    <string name="price_template">%1$d$/ខែ</string>
+
+    <!-- Profile screen specifics -->
+    <string name="change_photo">ផ្លាស់ប្តូររូបភាព</string>
+    <string name="label_sign_out">ចាកចេញ</string>
+    <string name="profile_name_placeholder">អ្នកប្រើ</string>
+    <string name="profile_email_placeholder">user@email.com</string>
+
+    <!-- Menu reusable row -->
+    <string name="menu_placeholder">ម៉ឺនុយ</string>
+
+    <!-- Profile menu labels (used in ProfileFragment.java) -->
+    <string name="label_settings">ការកំណត់</string>
+    <string name="label_payment">ការទូទាត់</string>
+    <string name="label_notification">ការជូនដំណឹង</string>
+    <string name="label_recent_viewed">បានមើលថ្មីៗ</string>
+    <string name="label_about">អំពីកម្មវិធី</string>
+
 </resources>

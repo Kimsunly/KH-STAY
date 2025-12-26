@@ -1,45 +1,75 @@
 package com.khstay.myapplication.ui.search;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.khstay.myapplication.R;
-import com.khstay.myapplication.ui.rental.Rental;
-import com.khstay.myapplication.ui.rental.RentalAdapter;
+import com.khstay.myapplication.data.repository.UserRepository;
+import com.khstay.myapplication.ui.rental.RentalHouseDetailActivity;
+import com.khstay.myapplication.ui.rental.model.Rental;
+import com.khstay.myapplication.ui.rental.adapters.RentalAdapter;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class SearchFragment extends Fragment {
 
+    private static final String TAG = "SearchFragment";
+
     // Views
     private SearchView searchView;
-    private ImageButton btnFilter;
-    private ImageButton btnSort;
+    private ImageButton btnFilter, btnSort;
     private ChipGroup chipGroupCategories;
     private RecyclerView recyclerHouses;
     private View emptyState;
-    private ImageView ivEmpty;
-    private TextView tvEmptyTitle;
-    private TextView tvEmptySubtitle;
+    private com.facebook.shimmer.ShimmerFrameLayout shimmerLoading;
 
     // Data
     private RentalAdapter rentalAdapter;
     private List<Rental> allRentals = new ArrayList<>();
     private List<Rental> filteredRentals = new ArrayList<>();
+
+    // Filters
     private String currentSearchQuery = "";
-    private String selectedCategory = "All";
+    private String selectedCommune = "All";
+    private String sortOption = "newest"; // newest, price_low, price_high
+    private Double minPrice = null;
+    private Double maxPrice = null;
+    private Integer minBedrooms = null;
+
+    // Available communes extracted from data
+    private Set<String> availableCommunes = new HashSet<>();
+
+    // Firebase & Repository
+    private FirebaseFirestore db;
+    private UserRepository userRepository;
+
+    // Track favorite states
+    private Map<String, Boolean> favoriteStates = new HashMap<>();
 
     @Nullable
     @Override
@@ -52,13 +82,14 @@ public class SearchFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        db = FirebaseFirestore.getInstance();
+        userRepository = new UserRepository();
+
         initializeViews(view);
         setupRecyclerView();
         setupSearchView();
-        setupCategoryChips();
         setupButtons();
 
-        // Load initial data
         loadRentals();
     }
 
@@ -69,46 +100,113 @@ public class SearchFragment extends Fragment {
         chipGroupCategories = view.findViewById(R.id.chipGroupCategories);
         recyclerHouses = view.findViewById(R.id.recyclerHouses);
         emptyState = view.findViewById(R.id.emptyState);
-        ivEmpty = view.findViewById(R.id.ivEmpty);
-        tvEmptyTitle = view.findViewById(R.id.tvEmptyTitle);
-        tvEmptySubtitle = view.findViewById(R.id.tvEmptySubtitle);
+
+        // Initialize shimmer - will be null if not in layout yet
+        try {
+            shimmerLoading = view.findViewById(R.id.shimmerLoading);
+        } catch (Exception e) {
+            shimmerLoading = null;
+        }
     }
 
     private void setupRecyclerView() {
         recyclerHouses.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        // Create adapter for search mode (no status badge, show favorite button)
         rentalAdapter = new RentalAdapter(getContext(), filteredRentals, false, true);
         recyclerHouses.setAdapter(rentalAdapter);
 
-        // Set click listener
         rentalAdapter.setOnRentalClickListener(new RentalAdapter.OnRentalClickListener() {
             @Override
             public void onRentalClick(Rental rental) {
-                // TODO: Navigate to rental detail page
-                // Example:
-                // Bundle bundle = new Bundle();
-                // bundle.putInt("rental_id", rental.getId());
-                // NavHostFragment.findNavController(SearchFragment.this)
-                //     .navigate(R.id.action_searchFragment_to_detailFragment, bundle);
+                if (rental.getId() != null && !rental.getId().isEmpty()) {
+                    Intent intent = new Intent(getActivity(), RentalHouseDetailActivity.class);
+                    intent.putExtra(RentalHouseDetailActivity.EXTRA_RENTAL_ID, rental.getId());
+                    startActivity(intent);
+                }
             }
 
             @Override
             public void onMoreClick(Rental rental) {
-                // Not used in search mode
+                // Not used in search
             }
 
             @Override
             public void onFavoriteClick(Rental rental) {
-                // TODO: Save favorite to database/preferences
-                // Example:
-                // if (rental.isFavorite()) {
-                //     saveFavorite(rental.getId());
-                // } else {
-                //     removeFavorite(rental.getId());
-                // }
+                toggleFavorite(rental);
             }
         });
+    }
+
+    private void toggleFavorite(Rental rental) {
+        if (rental == null || rental.getId() == null) return;
+
+        String rentalId = rental.getId();
+        boolean currentlyFavorited = favoriteStates.getOrDefault(rentalId, false);
+
+        if (currentlyFavorited) {
+            // Remove from favorites
+            userRepository.removeFavorite(rentalId)
+                    .addOnSuccessListener(aVoid -> {
+                        favoriteStates.put(rentalId, false);
+                        rental.setFavorite(false);
+                        rentalAdapter.notifyDataSetChanged();
+                        Toast.makeText(getContext(), "Removed from favorites", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to remove favorite", e);
+                        Toast.makeText(getContext(), "Failed to update favorites", Toast.LENGTH_SHORT).show();
+                    });
+        } else {
+            // Add to favorites
+            String propertyPrice = "$" + (rental.getPrice() != null ? rental.getPrice().intValue() : 0) + "/month";
+            userRepository.addFavorite(
+                            rentalId,
+                            rental.getTitle(),
+                            rental.getImageUrl(),
+                            propertyPrice,
+                            rental.getLocation()
+                    )
+                    .addOnSuccessListener(aVoid -> {
+                        favoriteStates.put(rentalId, true);
+                        rental.setFavorite(true);
+                        rentalAdapter.notifyDataSetChanged();
+                        Toast.makeText(getContext(), "Added to favorites", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to add favorite", e);
+                        Toast.makeText(getContext(), "Failed to update favorites", Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
+    private void loadFavoriteStates() {
+        // Load favorite states for all rentals
+        if (userRepository.getFavorites() != null) {
+            userRepository.getFavorites()
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        favoriteStates.clear();
+                        querySnapshot.forEach(doc -> {
+                            String propertyId = doc.getString("propertyId");
+                            if (propertyId != null) {
+                                favoriteStates.put(propertyId, true);
+                            }
+                        });
+
+                        // Update rental objects with favorite state
+                        for (Rental rental : allRentals) {
+                            if (rental.getId() != null) {
+                                boolean isFav = favoriteStates.getOrDefault(rental.getId(), false);
+                                rental.setFavorite(isFav);
+                            }
+                        }
+
+                        // Refresh UI
+                        filterRentals();
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to load favorite states", e);
+                    });
+        }
     }
 
     private void setupSearchView() {
@@ -128,7 +226,6 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // Clear search when close button is clicked
         searchView.setOnCloseListener(() -> {
             currentSearchQuery = "";
             filterRentals();
@@ -136,78 +233,204 @@ public class SearchFragment extends Fragment {
         });
     }
 
-    private void setupCategoryChips() {
+    private void setupCommuneChips() {
+        chipGroupCategories.removeAllViews();
+
+        // Add "All" chip
+        Chip chipAll = createChip("All", true);
+        chipGroupCategories.addView(chipAll);
+
+        // Add chips for each available commune
+        List<String> sortedCommunes = new ArrayList<>(availableCommunes);
+        java.util.Collections.sort(sortedCommunes);
+
+        for (String commune : sortedCommunes) {
+            Chip chip = createChip(commune, false);
+            chipGroupCategories.addView(chip);
+        }
+
+        // Add "Add New" chip at the end
+        Chip chipAddNew = createAddNewChip();
+        chipGroupCategories.addView(chipAddNew);
+
+        // Set up chip selection listener
         chipGroupCategories.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == View.NO_ID) {
-                // No chip selected, default to "All"
-                selectedCategory = "All";
+                selectedCommune = "All";
+                chipAll.setChecked(true);
             } else {
                 Chip selectedChip = group.findViewById(checkedId);
-                if (selectedChip != null) {
-                    selectedCategory = selectedChip.getText().toString();
+                if (selectedChip != null && selectedChip.getTag() != null && selectedChip.getTag().equals("addnew")) {
+                    // Don't change selection, show dialog instead
+                    chipGroupCategories.clearCheck();
+                    showAddCommuneDialog();
+                } else if (selectedChip != null) {
+                    selectedCommune = selectedChip.getText().toString();
+                    filterRentals();
                 }
             }
-            filterRentals();
         });
 
-        // Set default selection to "All"
-        Chip chipAll = chipGroupCategories.findViewById(R.id.chipAll);
-        if (chipAll != null) {
-            chipAll.setChecked(true);
-        }
+        chipAll.setChecked(true);
+    }
+
+    private Chip createChip(String text, boolean checked) {
+        Chip chip = new Chip(requireContext());
+        chip.setText(text);
+        chip.setCheckable(true);
+        chip.setChecked(checked);
+        chip.setChipBackgroundColorResource(checked ? R.color.primary : R.color.white);
+        chip.setTextColor(getResources().getColor(checked ? R.color.white : R.color.black));
+        return chip;
+    }
+
+    private Chip createAddNewChip() {
+        Chip chip = new Chip(requireContext());
+        chip.setText("+ Add Commune");
+        chip.setCheckable(true);
+        chip.setChecked(false);
+        chip.setChipBackgroundColorResource(R.color.primary_light);
+        chip.setTextColor(getResources().getColor(R.color.primary));
+        chip.setTag("addnew");
+        return chip;
+    }
+
+    private void showAddCommuneDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Add New Commune");
+
+        final EditText input = new EditText(requireContext());
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        input.setHint("Enter commune name");
+        input.setPadding(50, 30, 50, 30);
+        builder.setView(input);
+
+        builder.setPositiveButton("Add", (dialog, which) -> {
+            String newCommune = input.getText().toString().trim();
+            if (!newCommune.isEmpty()) {
+                if (!availableCommunes.contains(newCommune)) {
+                    availableCommunes.add(newCommune);
+                    setupCommuneChips();
+                    Toast.makeText(getContext(), "Commune added: " + newCommune, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Commune already exists", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
     }
 
     private void setupButtons() {
-        // Filter button click
         btnFilter.setOnClickListener(v -> showFilterDialog());
-
-        // Sort button click
         btnSort.setOnClickListener(v -> showSortDialog());
     }
 
-    private void showFilterDialog() {
-        // TODO: Implement filter dialog
-        // Create and show a dialog with filter options
-        // Example: FilterDialogFragment.show(getParentFragmentManager(), selectedFilters -> {
-        //     applyFilters(selectedFilters);
-        // });
-    }
-
-    private void showSortDialog() {
-        // TODO: Implement sort dialog
-        // Create and show a dialog with sort options
-        // Example: SortDialogFragment.show(getParentFragmentManager(), sortOption -> {
-        //     sortRentals(sortOption);
-        // });
-    }
-
     private void loadRentals() {
-        // TODO: Replace with your actual data loading
-        // This could be from:
-        // - Firebase Firestore
-        // - Room Database
-        // - REST API
-        // - SharedViewModel
+        Log.d(TAG, "Loading all active rentals from Firestore");
 
-        // For now, using sample data
-        allRentals.clear();
-        allRentals.addAll(getSampleRentals());
-        filterRentals();
+        // Show skeleton
+        if (shimmerLoading != null) {
+            shimmerLoading.startShimmer();
+            shimmerLoading.setVisibility(View.VISIBLE);
+        }
+        recyclerHouses.setVisibility(View.GONE);
+        emptyState.setVisibility(View.GONE);
+
+        db.collection("rental_houses")
+                .whereEqualTo("status", "active")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    allRentals.clear();
+                    availableCommunes.clear();
+
+                    for (DocumentSnapshot doc : querySnapshot.getDocuments()) {
+                        Rental rental = doc.toObject(Rental.class);
+                        if (rental != null) {
+                            rental.setId(doc.getId());
+                            allRentals.add(rental);
+
+                            // Extract commune from location
+                            String location = rental.getLocation();
+                            if (location != null && !location.isEmpty()) {
+                                // Try to extract commune name from location
+                                // Assuming format like "Commune Name, District, City"
+                                String[] parts = location.split(",");
+                                if (parts.length > 0) {
+                                    String commune = parts[0].trim();
+                                    if (!commune.isEmpty()) {
+                                        availableCommunes.add(commune);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Log.d(TAG, "Loaded " + allRentals.size() + " active rentals");
+                    Log.d(TAG, "Found " + availableCommunes.size() + " unique communes");
+
+                    // Setup commune chips after loading data
+                    setupCommuneChips();
+
+                    // Load favorite states
+                    loadFavoriteStates();
+
+                    // Hide skeleton
+                    if (shimmerLoading != null) {
+                        shimmerLoading.stopShimmer();
+                        shimmerLoading.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to load rentals", e);
+
+                    // Hide skeleton on error
+                    if (shimmerLoading != null) {
+                        shimmerLoading.stopShimmer();
+                        shimmerLoading.setVisibility(View.GONE);
+                    }
+
+                    updateUI();
+                });
     }
 
     private void filterRentals() {
         filteredRentals.clear();
 
         for (Rental rental : allRentals) {
-            boolean matchesSearch = matchesSearchQuery(rental);
-            boolean matchesCategory = matchesCategory(rental);
-
-            if (matchesSearch && matchesCategory) {
+            if (matchesAllFilters(rental)) {
                 filteredRentals.add(rental);
             }
         }
 
+        sortRentals();
         updateUI();
+
+        Log.d(TAG, "Filtered to " + filteredRentals.size() + " rentals");
+    }
+
+    private boolean matchesAllFilters(Rental rental) {
+        // Search query
+        if (!matchesSearchQuery(rental)) return false;
+
+        // Commune filter
+        if (!matchesCommune(rental)) return false;
+
+        // Price range
+        if (minPrice != null && (rental.getPrice() == null || rental.getPrice() < minPrice)) {
+            return false;
+        }
+        if (maxPrice != null && (rental.getPrice() == null || rental.getPrice() > maxPrice)) {
+            return false;
+        }
+
+        // Bedrooms
+        if (minBedrooms != null && (rental.getBedrooms() == null || rental.getBedrooms() < minBedrooms)) {
+            return false;
+        }
+
+        return true;
     }
 
     private boolean matchesSearchQuery(Rental rental) {
@@ -220,152 +443,134 @@ public class SearchFragment extends Fragment {
         String location = rental.getLocation() != null ? rental.getLocation().toLowerCase() : "";
         String description = rental.getDescription() != null ? rental.getDescription().toLowerCase() : "";
 
-        return title.contains(query) ||
-                location.contains(query) ||
-                description.contains(query);
+        return title.contains(query) || location.contains(query) || description.contains(query);
     }
 
-    private boolean matchesCategory(Rental rental) {
-        if (selectedCategory == null || selectedCategory.equals("All")) {
+    private boolean matchesCommune(Rental rental) {
+        if (selectedCommune == null || selectedCommune.equals("All")) {
             return true;
         }
 
-        String rentalCategory = rental.getCategory();
-        return rentalCategory != null && rentalCategory.equals(selectedCategory);
+        String location = rental.getLocation();
+        if (location == null || location.isEmpty()) {
+            return false;
+        }
+
+        // Check if location contains the selected commune
+        // Make it case-insensitive
+        return location.toLowerCase().contains(selectedCommune.toLowerCase());
+    }
+
+    private void sortRentals() {
+        switch (sortOption) {
+            case "price_low":
+                filteredRentals.sort((r1, r2) -> {
+                    Double p1 = r1.getPrice() != null ? r1.getPrice() : 0.0;
+                    Double p2 = r2.getPrice() != null ? r2.getPrice() : 0.0;
+                    return Double.compare(p1, p2);
+                });
+                break;
+
+            case "price_high":
+                filteredRentals.sort((r1, r2) -> {
+                    Double p1 = r1.getPrice() != null ? r1.getPrice() : 0.0;
+                    Double p2 = r2.getPrice() != null ? r2.getPrice() : 0.0;
+                    return Double.compare(p2, p1);
+                });
+                break;
+
+            case "newest":
+            default:
+                filteredRentals.sort((r1, r2) -> {
+                    if (r1.getCreatedAt() == null) return 1;
+                    if (r2.getCreatedAt() == null) return -1;
+                    return r2.getCreatedAt().compareTo(r1.getCreatedAt());
+                });
+                break;
+        }
     }
 
     private void updateUI() {
         if (filteredRentals.isEmpty()) {
-            // Show empty state
             emptyState.setVisibility(View.VISIBLE);
             recyclerHouses.setVisibility(View.GONE);
-
-            // Update empty state message based on context
-            if (currentSearchQuery != null && !currentSearchQuery.trim().isEmpty()) {
-                tvEmptyTitle.setText("No results found");
-                tvEmptySubtitle.setText("We couldn't find any places matching \"" +
-                        currentSearchQuery + "\"");
-            } else {
-                tvEmptyTitle.setText("No places available");
-                tvEmptySubtitle.setText("There are no places in " + selectedCategory + " at the moment");
-            }
         } else {
-            // Show results
             emptyState.setVisibility(View.GONE);
             recyclerHouses.setVisibility(View.VISIBLE);
             rentalAdapter.notifyDataSetChanged();
         }
     }
 
-    // Sample data - Replace with actual data loading
-    private List<Rental> getSampleRentals() {
-        List<Rental> rentals = new ArrayList<>();
+    private void showSortDialog() {
+        String[] options = {"Newest First", "Price: Low to High", "Price: High to Low"};
+        int selectedIndex = sortOption.equals("price_low") ? 1 :
+                sortOption.equals("price_high") ? 2 : 0;
 
-        // Using your existing Rental constructor
-        rentals.add(new Rental(
-                1,
-                "Modern 3-Bedroom House with Garden",
-                "Sen Sok District, Phnom Penh",
-                "600",
-                "Active",
-                R.drawable.house_image,
-                "Sen Sok",
-                "Beautiful modern house with spacious garden and parking",
-                3,
-                2
-        ));
-
-        rentals.add(new Rental(
-                2,
-                "Cozy Studio Apartment",
-                "Toul Kok District, Phnom Penh",
-                "250",
-                "Active",
-                R.drawable.house_image,
-                "Toul Kok",
-                "Perfect studio for single professionals",
-                1,
-                1
-        ));
-
-        rentals.add(new Rental(
-                3,
-                "Luxury 2-Bedroom Condo",
-                "Psar Derm Tkev, Phnom Penh",
-                "800",
-                "Active",
-                R.drawable.house_image,
-                "Psar Derm Tkev",
-                "High-rise condo with amazing city views",
-                2,
-                2
-        ));
-
-        rentals.add(new Rental(
-                4,
-                "Spacious Family Home",
-                "Dangkao District, Phnom Penh",
-                "950",
-                "Active",
-                R.drawable.house_image,
-                "Dangkao",
-                "Perfect for families with large living areas",
-                4,
-                3
-        ));
-
-        rentals.add(new Rental(
-                5,
-                "Affordable Room",
-                "Chamkar Mon District, Phnom Penh",
-                "180",
-                "Active",
-                R.drawable.house_image,
-                "Chamkar Mon",
-                "Budget-friendly room for students",
-                1,
-                1
-        ));
-
-        rentals.add(new Rental(
-                6,
-                "Luxury Villa with Pool",
-                "Mean Chey District, Phnom Penh",
-                "1500",
-                "Active",
-                R.drawable.house_image,
-                "Mean Chey",
-                "Exclusive villa with private pool and gym",
-                5,
-                4
-        ));
-
-        return rentals;
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Sort By")
+                .setSingleChoiceItems(options, selectedIndex, (dialog, which) -> {
+                    switch (which) {
+                        case 0: sortOption = "newest"; break;
+                        case 1: sortOption = "price_low"; break;
+                        case 2: sortOption = "price_high"; break;
+                    }
+                    filterRentals();
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
-    // Public method to set rentals from parent activity/shared viewmodel
-    public void setRentalsData(List<Rental> rentals) {
-        this.allRentals = rentals;
-        filterRentals();
+    private void showFilterDialog() {
+        View filterView = LayoutInflater.from(getContext())
+                .inflate(R.layout.dialog_filter, null);
+
+        // Get views from dialog
+        com.google.android.material.textfield.TextInputEditText etMinPrice =
+                filterView.findViewById(R.id.etMinPrice);
+        com.google.android.material.textfield.TextInputEditText etMaxPrice =
+                filterView.findViewById(R.id.etMaxPrice);
+        com.google.android.material.textfield.TextInputEditText etMinBedrooms =
+                filterView.findViewById(R.id.etMinBedrooms);
+
+        // Set current values
+        if (minPrice != null) etMinPrice.setText(String.valueOf(minPrice.intValue()));
+        if (maxPrice != null) etMaxPrice.setText(String.valueOf(maxPrice.intValue()));
+        if (minBedrooms != null) etMinBedrooms.setText(String.valueOf(minBedrooms));
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Filter")
+                .setView(filterView)
+                .setPositiveButton("Apply", (dialog, which) -> {
+                    try {
+                        String minPriceStr = etMinPrice.getText().toString();
+                        String maxPriceStr = etMaxPrice.getText().toString();
+                        String minBedroomsStr = etMinBedrooms.getText().toString();
+
+                        minPrice = minPriceStr.isEmpty() ? null : Double.parseDouble(minPriceStr);
+                        maxPrice = maxPriceStr.isEmpty() ? null : Double.parseDouble(maxPriceStr);
+                        minBedrooms = minBedroomsStr.isEmpty() ? null : Integer.parseInt(minBedroomsStr);
+
+                        filterRentals();
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .setNeutralButton("Clear", (dialog, which) -> {
+                    minPrice = null;
+                    maxPrice = null;
+                    minBedrooms = null;
+                    filterRentals();
+                })
+                .show();
     }
 
-    // Refresh data method
-    public void refreshData() {
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume - Refreshing rentals and favorites");
+        // Reload all rentals and favorite states when fragment becomes visible
         loadRentals();
-    }
-
-    // Clear search method
-    public void clearSearch() {
-        searchView.setQuery("", false);
-        searchView.clearFocus();
-        currentSearchQuery = "";
-
-        // Reset category to "All"
-        Chip chipAll = chipGroupCategories.findViewById(R.id.chipAll);
-        if (chipAll != null) {
-            chipAll.setChecked(true);
-        }
-
-        filterRentals();
     }
 }

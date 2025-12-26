@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="mnuActivate" type="id"/>
+    <item name="btnAddCategory" type="id" />
+    <item name="shimmerLoading" type="id" />
+</resources>
+

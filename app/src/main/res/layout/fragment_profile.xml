@@ -1,154 +1,201 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5"
-    android:fillViewport="true">
+    android:background="#FFFFFF">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <!-- 🎨 SKELETON LOADING -->
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmerProfile"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:layout_height="match_parent"
+        android:visibility="visible">
 
-        <!-- Back Button -->
-        <ImageView
-            android:id="@+id/backButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_back"
-            android:contentDescription="Back"
+        <include layout="@layout/skeleton_profile" />
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
+    <!-- 📱 ACTUAL CONTENT -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <!-- Header with centered title only -->
+        <LinearLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="#FFFFFF"
+            android:elevation="4dp"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Profile Picture FrameLayout -->
-        <FrameLayout
-            android:id="@+id/profilePictureFrame"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            <TextView
+                android:id="@+id/topTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/profile"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Scrollable content -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintTop_toBottomOf="@id/headerLayout"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
-            android:layout_marginTop="16dp">
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <ImageView
-                android:id="@+id/profileImage"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_profile"
-                android:scaleType="centerCrop"
-                android:background="@drawable/circle_background"
-                android:clipToOutline="true" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="32dp"
+                android:paddingBottom="32dp">
 
-            <!-- Camera Icon -->
-            <ImageView
-                android:id="@+id/cameraIcon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="bottom|end"
-                android:src="@drawable/ic_camera"
-                android:background="@drawable/orange_circle"
-                android:padding="6dp" />
-        </FrameLayout>
+                <!-- Profile Picture with Camera Icon -->
+                <FrameLayout
+                    android:id="@+id/profilePictureFrame"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_gravity="center_horizontal">
 
-        <!-- Name -->
-        <TextView
-            android:id="@+id/profileName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Guest"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#000000"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/profilePictureFrame"
-            android:layout_marginTop="12dp" />
+                    <ImageView
+                        android:id="@+id/profileImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:src="@drawable/ic_profile"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/circle_background"
+                        android:clipToOutline="true"
+                        android:contentDescription="@string/content_desc_profile_image" />
 
-        <!-- Email -->
-        <TextView
-            android:id="@+id/profileEmail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="guest@gmail.com"
-            android:textSize="14sp"
-            android:textColor="#8A8A8A"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/profileName"
-            android:layout_marginTop="4dp" />
+                    <ImageView
+                        android:id="@+id/cameraIcon"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="bottom|end"
+                        android:src="@drawable/ic_camera"
+                        android:contentDescription="@string/change_photo"
+                        android:background="@drawable/orange_circle"
+                        android:padding="6dp" />
+                </FrameLayout>
 
-        <!-- Divider -->
-        <View
-            android:id="@+id/divider"
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:background="#E0E0E0"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/profileEmail"
-            android:layout_marginTop="24dp" />
+                <!-- Name -->
+                <TextView
+                    android:id="@+id/profileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/profile_name_placeholder"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="16dp" />
 
-        <!-- Menu Options (Vertical Chain) -->
-        <include
-            android:id="@+id/settingsItem"
-            layout="@layout/profile_menu_item"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/divider"
-            android:layout_marginTop="0dp" />
+                <!-- Email -->
+                <TextView
+                    android:id="@+id/profileEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/profile_email_placeholder"
+                    android:textSize="14sp"
+                    android:textColor="#999999"
+                    android:layout_marginTop="4dp" />
 
-        <include
-            android:id="@+id/paymentItem"
-            layout="@layout/profile_menu_item"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/settingsItem" />
+                <!-- Menu Items Container -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="48dp"
+                    android:paddingStart="24dp"
+                    android:paddingEnd="24dp">
 
-        <include
-            android:id="@+id/notificationItem"
-            layout="@layout/profile_menu_item"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/paymentItem" />
+                    <!-- Edit Profile Item -->
+                    <include
+                        android:id="@+id/editProfileItem"
+                        layout="@layout/profile_menu_item"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp" />
 
-        <include
-            android:id="@+id/recentViewedItem"
-            layout="@layout/profile_menu_item"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/notificationItem" />
+                    <!-- Booking Requests Item -->
+                    <include
+                        android:id="@+id/bookingRequestsItem"
+                        layout="@layout/profile_menu_item"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp" />
 
-        <include
-            android:id="@+id/aboutItem"
-            layout="@layout/profile_menu_item"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/recentViewedItem" />
+                    <!-- Settings Item -->
+                    <include
+                        android:id="@+id/settingsItem"
+                        layout="@layout/profile_menu_item"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp" />
 
-        <!-- Sign Out -->
-        <TextView
-            android:id="@+id/signOut"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sign Out"
-            android:textColor="#FF6B4A"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/aboutItem"
-            android:layout_marginTop="36dp" />
+                    <!-- Payment Item -->
+                    <include
+                        android:id="@+id/paymentItem"
+                        layout="@layout/profile_menu_item"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp" />
+
+                    <!-- Notification Item -->
+                    <include
+                        android:id="@+id/notificationItem"
+                        layout="@layout/profile_menu_item"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp" />
+
+                    <!-- Recent Viewed Item -->
+                    <include
+                        android:id="@+id/recentViewedItem"
+                        layout="@layout/profile_menu_item"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp" />
+
+                    <!-- Favorites Item -->
+                    <include
+                        android:id="@+id/favoritesItem"
+                        layout="@layout/profile_menu_item"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp" />
+
+                    <!-- About Item -->
+                    <include
+                        android:id="@+id/aboutItem"
+                        layout="@layout/profile_menu_item"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp" />
+
+                </LinearLayout>
+
+                <!-- Sign Out Button -->
+                <TextView
+                    android:id="@+id/signOut"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/label_sign_out"
+                    android:textColor="#FF6B35"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="48dp" />
+
+            </LinearLayout>
+        </ScrollView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+</FrameLayout>

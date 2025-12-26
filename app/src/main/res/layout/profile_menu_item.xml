@@ -2,32 +2,75 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/menuRow"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp"
-    android:background="?android:attr/selectableItemBackground"
+    android:layout_height="56dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
+    <!-- Left icon -->
     <ImageView
         android:id="@+id/menuIcon"
         android:layout_width="24dp"
         android:layout_height="24dp"
+        android:contentDescription="@string/content_desc_menu_icon"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:tint="@color/primary_light" />
 
+    <!-- Title -->
     <TextView
         android:id="@+id/menuTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Menu Item"
+        android:text="@string/menu_placeholder"
+        android:textColor="@color/black"
         android:textSize="16sp"
-        android:textColor="#000000"
-        android:layout_marginStart="16dp"
+        android:ellipsize="end"
+        android:singleLine="true"
         app:layout_constraintStart_toEndOf="@id/menuIcon"
+        app:layout_constraintEnd_toStartOf="@id/menuChevron"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="12dp" />
+
+    <!-- Optional small status/badge (hidden by default) -->
+    <ImageView
+        android:id="@+id/menuBadge"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:visibility="gone"
+        android:contentDescription="@string/content_desc_status_badge"
+        app:layout_constraintStart_toEndOf="@id/menuTitle"
+        app:layout_constraintTop_toTopOf="@id/menuTitle"
+        app:layout_constraintBottom_toBottomOf="@id/menuTitle"
+        android:layout_marginStart="8dp"
+        app:tint="@color/primary_light" />
+
+    <!-- Right chevron -->
+    <ImageView
+        android:id="@+id/menuChevron"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/ic_chevron_right"
+        android:contentDescription="@string/content_desc_chevron"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:tint="#B0B0B0" />
+
+    <!-- Divider line (aligned under the content) -->
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="#F0F0F0"
+        app:layout_constraintStart_toStartOf="@id/menuIcon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -21,14 +21,19 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.khstay.myapplication.MainActivity;
 import com.khstay.myapplication.R;
+
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -37,6 +42,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView tvForgotPassword, tvSignUp;
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
     private GoogleSignInClient mGoogleSignInClient;
     private CallbackManager mCallbackManager;
     private static final int RC_SIGN_IN = 1001;
@@ -47,7 +53,6 @@ public class LoginActivity extends AppCompatActivity {
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            // User already logged in
             startActivity(new Intent(this, MainActivity.class));
             finish();
             return;
@@ -55,24 +60,20 @@ public class LoginActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_login);
         initViews();
-        mAuth = FirebaseAuth.getInstance();
 
-        // Configure Google Sign-In
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        // Initialize Facebook Callback Manager
         mCallbackManager = CallbackManager.Factory.create();
         registerFacebookCallback();
 
-        // Setup all button clicks
         setupClickListeners();
-
-        // You can now safely remove the temporary KeyHash generation code
-        // as we have confirmed the correct hash is on your dashboard.
     }
 
     private void initViews() {
@@ -98,9 +99,6 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
         });
     }
-
-    // --- NO CHANGES NEEDED TO ANY OF THE METHODS BELOW ---
-    // The rest of your logic is correct.
 
     private void handleEmailLogin() {
         String email = etEmail.getText().toString().trim();
@@ -154,6 +152,10 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            saveOrUpdateUserData(user);
+                        }
                         navigateToMain();
                     } else {
                         Toast.makeText(LoginActivity.this,
@@ -167,6 +169,10 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            saveOrUpdateUserData(user);
+                        }
                         navigateToMain();
                     } else {
                         Toast.makeText(LoginActivity.this, "Google Authentication Failed",
@@ -188,12 +194,54 @@ public class LoginActivity extends AppCompatActivity {
                     firebaseAuthWithGoogle(account);
                 }
             } catch (ApiException e) {
-                Toast.makeText(this, "Google Sign-In Failed. Error Code: " + e.getStatusCode(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Google Sign-In Failed. Error Code: " + e.getStatusCode(),
+                        Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
         }
     }
 
+    private void saveOrUpdateUserData(FirebaseUser user) {
+        if (user == null) return;
+
+        String uid = user.getUid();
+        String displayName = user.getDisplayName();
+        if (displayName == null || displayName.isEmpty()) {
+            displayName = "User";
+        }
+
+        String avatarUrl = user.getPhotoUrl() != null ?
+                user.getPhotoUrl().toString() :
+                "https://ui-avatars.com/api/?name=" +
+                        displayName.replace(" ", "+") +
+                        "&size=200&background=FF6B35&color=fff";
+
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("userId", uid);
+        userData.put("displayName", displayName);
+        userData.put("email", user.getEmail());
+        userData.put("photoUrl", avatarUrl);
+        userData.put("phone", user.getPhoneNumber());
+        userData.put("updatedAt", Timestamp.now());
+        userData.put("role", "user");
+
+        // Use set with merge to create or update
+        db.collection("users").document(uid)
+                .set(userData, com.google.firebase.firestore.SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    // Add createdAt only for new documents
+                    db.collection("users").document(uid).get()
+                            .addOnSuccessListener(doc -> {
+                                if (!doc.contains("createdAt")) {
+                                    db.collection("users").document(uid)
+                                            .update("createdAt", Timestamp.now());
+                                }
+                            });
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to save user data: " + e.getMessage(),
+                                Toast.LENGTH_SHORT).show());
+    }
 
     private void navigateToMain() {
         FirebaseUser user = mAuth.getCurrentUser();

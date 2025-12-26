@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_view_property"
+        android:title="View Details"
+        android:icon="@drawable/ic_visibility" />
+
+    <item
+        android:id="@+id/action_view_bookings"
+        android:title="View Booking Requests"
+        android:icon="@drawable/ic_calendar" />
+
+    <item
+        android:id="@+id/action_archive"
+        android:title="Archive Property"
+        android:icon="@drawable/ic_status_archived" />
+
+    <item
+        android:id="@+id/action_activate"
+        android:title="Reactivate Property"
+        android:icon="@drawable/ic_check"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/action_delete"
+        android:title="Delete Property"
+        android:icon="@drawable/ic_delete" />
+
+</menu>

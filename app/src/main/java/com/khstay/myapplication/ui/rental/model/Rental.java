@@ -1,5 +1,4 @@
-
-package com.khstay.myapplication.ui.rental;
+package com.khstay.myapplication.ui.rental.model;
 
 import androidx.annotation.Keep;
 import com.google.firebase.Timestamp;
@@ -21,20 +20,19 @@ public class Rental {
     private String status;           // "active" | "pending" | "archived"
     private Boolean isPopular;
     private Timestamp createdAt;
+    private Timestamp updatedAt;
     private String imageUrl;
     private Double latitude;
     private Double longitude;
     private String ownerId;
-
-    // Optional Firestore field
     private String category;
+    private String description;
+    private Integer bedrooms;
+    private Integer bathrooms;
 
     // ===== UI-only helpers =====
     private Integer imageResId;      // local drawable fallback
-    private Integer bedrooms;
-    private Integer bathrooms;
     private Boolean favorite;        // heart toggle in UI
-    private String description;      // detail text
 
     /** REQUIRED by Firestore */
     public Rental() { }
@@ -69,7 +67,7 @@ public class Rental {
         this.favorite = false;
     }
 
-    // ===== Getters & Setters (Activity uses these) =====
+    // ===== Getters & Setters =====
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -91,6 +89,9 @@ public class Rental {
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 
+    public Timestamp getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Timestamp updatedAt) { this.updatedAt = updatedAt; }
+
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
@@ -106,33 +107,32 @@ public class Rental {
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
 
-    public int getImageResId() { return imageResId != null ? imageResId : 0; }
-    public void setImageResId(Integer imageResId) { this.imageResId = imageResId; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public int getBedrooms() { return bedrooms != null ? bedrooms : 0; }
+    public Integer getBedrooms() { return bedrooms; }
     public void setBedrooms(Integer bedrooms) { this.bedrooms = bedrooms; }
 
-    public int getBathrooms() { return bathrooms != null ? bathrooms : 0; }
+    public Integer getBathrooms() { return bathrooms; }
     public void setBathrooms(Integer bathrooms) { this.bathrooms = bathrooms; }
+
+    public int getImageResId() { return imageResId != null ? imageResId : 0; }
+    public void setImageResId(Integer imageResId) { this.imageResId = imageResId; }
 
     public boolean isFavorite() { return favorite != null && favorite; }
     public void setFavorite(boolean favorite) { this.favorite = favorite; }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    // Optional helper
+    // ===== Helper Methods =====
     public String getBedroomBathroomText() {
-        int b = getBedrooms(), ba = getBathrooms();
+        int b = getBedrooms() != null ? getBedrooms() : 0;
+        int ba = getBathrooms() != null ? getBathrooms() : 0;
         if (b <= 0 && ba <= 0) return "";
         String bedText = b > 0 ? (b + (b == 1 ? " Bed" : " Beds")) : "";
         String bathText = ba > 0 ? (ba + (ba == 1 ? " Bath" : " Baths")) : "";
         return (!bedText.isEmpty() && !bathText.isEmpty()) ? (bedText + " · " + bathText) : (bedText + bathText);
     }
 
-
     public boolean hasImageUrl() {
         return imageUrl != null && !imageUrl.trim().isEmpty();
     }
-
 }
