@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Property Title -->
+        <TextView
+            android:id="@+id/tvRentalTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Property Title"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary" />
+
+        <!-- Guest Name -->
+        <TextView
+            android:id="@+id/tvGuestName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Guest: John Doe"
+            android:textSize="15sp"
+            android:textColor="@color/text_primary" />
+
+        <!-- Contact Info -->
+        <TextView
+            android:id="@+id/tvGuestContact"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="📱 +123456789 | 📧 email@example.com"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary" />
+
+        <!-- Dates -->
+        <TextView
+            android:id="@+id/tvBookingDates"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="📅 Jan 1 - Jan 7, 2025 (7 days)"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary" />
+
+        <!-- Price -->
+        <TextView
+            android:id="@+id/tvTotalPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="💰 Total: $280.00"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary" />
+
+        <!-- Status Badge -->
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:background="@drawable/bg_status_pending"
+            android:text="Pending"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_secondary" />
+
+        <!-- Action Buttons (for pending bookings) -->
+        <LinearLayout
+            android:id="@+id/actionButtons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btnReject"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Reject"
+                android:textColor="@color/error_red"
+                android:background="@drawable/edit_text_background"
+                android:layout_marginEnd="8dp"
+                style="?android:attr/borderlessButtonStyle" />
+
+            <Button
+                android:id="@+id/btnApprove"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Approve"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="@color/success_green" />
+        </LinearLayout>
+
+        <!-- Notes (if any) -->
+        <TextView
+            android:id="@+id/tvNotes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Notes: Guest message here..."
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

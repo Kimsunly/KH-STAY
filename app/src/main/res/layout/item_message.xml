@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="4dp">
+
+    <!-- Received Message (Left) -->
+    <LinearLayout
+        android:id="@+id/receivedMessageContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="60dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <TextView
+                android:id="@+id/tvReceivedMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:text="Received message text" />
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/tvReceivedTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:text="10:30 AM"
+            android:textSize="11sp"
+            android:textColor="@color/text_hint" />
+    </LinearLayout>
+
+    <!-- Sent Message (Right) -->
+    <LinearLayout
+        android:id="@+id/sentMessageContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/primary">
+
+            <TextView
+                android:id="@+id/tvSentMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="12dp"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:text="Sent message text" />
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:id="@+id/tvSentTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_gravity="end"
+            android:text="10:30 AM"
+            android:textSize="11sp"
+            android:textColor="@color/text_hint" />
+    </LinearLayout>
+
+</FrameLayout>

@@ -1,4 +1,4 @@
-package com.khstay.myapplication.ui.rental;
+package com.khstay.myapplication.ui.rental.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.khstay.myapplication.R;
+import com.khstay.myapplication.ui.rental.RentalHouseDetailActivity;
+import com.khstay.myapplication.ui.rental.model.Rental;
 
 import java.util.List;
 

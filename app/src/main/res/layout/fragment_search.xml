@@ -119,63 +119,87 @@
         </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
 
-    <!-- RecyclerView for results -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerHouses"
+    <!-- Results Container with Skeleton -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="8dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/categoryScrollView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/item_rental" />
-
-    <!-- Empty state (centered) -->
-    <LinearLayout
-        android:id="@+id/emptyState"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="24dp"
-        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/categoryScrollView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
-            android:id="@+id/ivEmpty"
-            android:layout_width="160dp"
-            android:layout_height="160dp"
-            android:src="@drawable/ic_search_nofound"
-            android:contentDescription="No results"
-            android:scaleType="centerInside" />
+        <!-- 🎨 SKELETON LOADING -->
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/shimmerLoading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
 
-        <TextView
-            android:id="@+id/tvEmptyTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="No result found"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#9E9E9E"
-            android:paddingTop="12dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
 
-        <TextView
-            android:id="@+id/tvEmptySubtitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="We did not find any place that match your search"
-            android:textSize="14sp"
-            android:textColor="#9E9E9E"
-            android:textAlignment="center"
-            android:paddingTop="4dp" />
-    </LinearLayout>
+                <include layout="@layout/skeleton_rental_item" />
+                <include layout="@layout/skeleton_rental_item" />
+                <include layout="@layout/skeleton_rental_item" />
+                <include layout="@layout/skeleton_rental_item" />
+                <include layout="@layout/skeleton_rental_item" />
+            </LinearLayout>
+        </com.facebook.shimmer.ShimmerFrameLayout>
+
+        <!-- RecyclerView for results -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerHouses"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_rental"
+            android:visibility="visible" />
+
+        <!-- Empty state (centered) -->
+        <LinearLayout
+            android:id="@+id/emptyState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="24dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/ivEmpty"
+                android:layout_width="160dp"
+                android:layout_height="160dp"
+                android:src="@drawable/ic_search_nofound"
+                android:contentDescription="No results"
+                android:scaleType="centerInside" />
+
+            <TextView
+                android:id="@+id/tvEmptyTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No result found"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#9E9E9E"
+                android:paddingTop="12dp" />
+
+            <TextView
+                android:id="@+id/tvEmptySubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="We did not find any place that match your search"
+                android:textSize="14sp"
+                android:textColor="#9E9E9E"
+                android:textAlignment="center"
+                android:paddingTop="4dp" />
+        </LinearLayout>
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,171 +1,150 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:cardUseCompatPadding="true"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    app:strokeWidth="0dp">
+    app:cardElevation="4dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Property Image -->
+        <!-- Property image -->
         <ImageView
             android:id="@+id/iv_property"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="180dp"
             android:scaleType="centerCrop"
-            android:adjustViewBounds="false"
-            android:background="#E0E0E0"
             android:contentDescription="@string/content_desc_property_image"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            xmlns:tools="http://schemas.android.com/tools"
-            tools:src="@drawable/house_image"
-            />
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Favorite Button (for SearchFragment; hidden by default) -->
+        <!-- Favorite heart (Search screen only; hidden elsewhere) -->
         <ImageView
             android:id="@+id/iv_favorite"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_margin="12dp"
-            android:padding="6dp"
-            android:background="@drawable/bg_favorite_button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="8dp"
+            android:background="@drawable/orange_circle"
+            android:tint="@android:color/white"
             android:src="@drawable/ic_favorite_outline"
-            android:contentDescription="@string/content_desc_favorite"
             android:visibility="gone"
+            android:contentDescription="@string/content_desc_favorite"
             app:layout_constraintTop_toTopOf="@id/iv_property"
             app:layout_constraintEnd_toEndOf="@id/iv_property"
-            app:tint="@android:color/white"
-            tools:visibility="visible" />
+            android:layout_margin="12dp" />
 
-        <!-- Content Container -->
-        <LinearLayout
-            android:id="@+id/content_container"
-            android:layout_width="match_parent"
+        <!-- Status badge (Active / Pending / Archived) -->
+        <TextView
+            android:id="@+id/tv_status"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:text="Active"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_status_active"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/iv_property"
+            app:layout_constraintBottom_toBottomOf="@id/iv_property"
+            android:layout_marginStart="12dp"
+            android:layout_marginBottom="12dp"
+            android:contentDescription="@string/content_desc_status_badge" />
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Modern Studio near AEON"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:ellipsize="end"
+            android:maxLines="1"
             app:layout_constraintTop_toBottomOf="@id/iv_property"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_more"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp" />
+
+        <!-- More (three dots) - used in MyRentFragment -->
+        <ImageButton
+            android:id="@+id/btn_more"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_more_vert"
+            android:tint="@color/text_secondary"
+            android:contentDescription="@string/content_desc_more_options"
+            app:layout_constraintTop_toTopOf="@id/tv_title"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            android:layout_marginEnd="8dp" />
 
-            <!-- Title and More Button Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+        <!-- Location -->
+        <TextView
+            android:id="@+id/tv_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Sen Sok, Phnom Penh"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:drawableStart="@drawable/ic_location"
+            android:drawablePadding="6dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintTop_toBottomOf="@id/tv_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="12dp" />
 
-                <TextView
-                    android:id="@+id/tv_title"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#212121"
-                    android:maxLines="2"
-                    android:ellipsize="end"
-                    tools:text="Modern 3-Bedroom House" />
+        <!-- Bed · Bath -->
+        <TextView
+            android:id="@+id/tv_bed_bath"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="2 Beds · 1 Bath"
+            android:textSize="13sp"
+            android:textColor="@color/text_hint"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintTop_toBottomOf="@id/tv_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="12dp" />
 
-                <!-- More Button (for MyRentFragment; hidden by default) -->
-                <ImageButton
-                    android:id="@+id/btn_more"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@drawable/ic_more_vert"
-                    android:contentDescription="@string/content_desc_more_options"
-                    android:padding="4dp"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-            </LinearLayout>
-
-            <!-- Location -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="4dp">
-
-                <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:src="@drawable/ic_location"
-                    android:contentDescription="@string/content_desc_location_icon"
-                    app:tint="#757575" />
-
-                <TextView
-                    android:id="@+id/tv_location"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
-                    android:textSize="13sp"
-                    android:textColor="#757575"
-                    android:maxLines="1"
-                    android:ellipsize="end"
-                    tools:text="Sen Sok District, Phnom Penh" />
-            </LinearLayout>
-
-            <!-- Bed & Bath Info (optional; hidden by default) -->
-            <TextView
-                android:id="@+id/tv_bed_bath"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:textSize="13sp"
-                android:textColor="#757575"
-                android:visibility="gone"
-                tools:text="3 Beds · 2 Baths"
-                tools:visibility="visible" />
-
-            <!-- Price and Status Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="8dp">
-
-                <TextView
-                    android:id="@+id/tv_price"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/primary"
-                    tools:text="$600/month" />
-
-                <!-- Status Badge (hidden by default; shown in MyRentFragment) -->
-                <TextView
-                    android:id="@+id/tv_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
-                    android:background="@drawable/bg_status_active"
-                    android:textColor="@color/success_green"
-                    android:visibility="gone"
-                    tools:text="Active"
-                    tools:visibility="visible" />
-            </LinearLayout>
-
-        </LinearLayout>
+        <!-- Price -->
+        <TextView
+            android:id="@+id/tv_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="$420/month"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            app:layout_constraintTop_toBottomOf="@id/tv_bed_bath"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="12dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </com.google.android.material.card.MaterialCardView>
+
