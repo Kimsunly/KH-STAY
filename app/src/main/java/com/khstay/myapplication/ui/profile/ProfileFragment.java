@@ -28,6 +28,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.khstay.myapplication.R;
 import com.khstay.myapplication.data.repository.UserRepository;
 import com.khstay.myapplication.ui.auth.LoginActivity;
@@ -38,14 +40,17 @@ import java.util.Map;
 public class ProfileFragment extends Fragment {
 
     private static final String TAG = "ProfileFragment";
+    private static final int IMAGE_TYPE_PROFILE = 1;
+    private static final int IMAGE_TYPE_COVER = 2;
 
     private View rootView;
-    private ImageView profileImage, cameraIcon;
+    private ImageView profileImage, cameraIcon, coverImage, coverCameraIcon;
     private TextView profileName, profileEmail, signOut;
     private View settingsItem, paymentItem, notificationItem, recentViewedItem, favoritesItem, aboutItem, editProfileItem, bookingRequestsItem;
 
     private FirebaseAuth auth;
     private FirebaseFirestore firestore;
+    private FirebaseStorage storage;
     private UserRepository userRepository;
 
     private ShimmerFrameLayout shimmerProfile;
@@ -53,6 +58,7 @@ public class ProfileFragment extends Fragment {
 
     private ActivityResultLauncher<Intent> imagePickerLauncher;
     private Uri selectedImageUri;
+    private int currentImageType = IMAGE_TYPE_PROFILE; // Track which image we're updating
 
     @Nullable
     @Override
@@ -63,6 +69,7 @@ public class ProfileFragment extends Fragment {
 
         auth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
         userRepository = new UserRepository();
 
         initViews(rootView);
@@ -75,18 +82,16 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        setupMenuRows();       // icons + titles + chevrons
-        setupClickListeners(); // click actions
-        loadUserProfile();     // shimmer + profile data
+        setupMenuRows();
+        setupClickListeners();
+        loadUserProfile();
     }
-
-    // ----------------------------------
-    // Init & binding
-    // ----------------------------------
 
     private void initViews(View root) {
         profileImage = root.findViewById(R.id.profileImage);
         cameraIcon = root.findViewById(R.id.cameraIcon);
+        coverImage = root.findViewById(R.id.coverImage);
+        coverCameraIcon = root.findViewById(R.id.coverCameraIcon);
         profileName = root.findViewById(R.id.profileName);
         profileEmail = root.findViewById(R.id.profileEmail);
         signOut = root.findViewById(R.id.signOut);
@@ -111,15 +116,14 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupMenuRows() {
-        // Bind icon + title + chevron consistently for each include row.
-        bindMenuRow(editProfileItem,       R.drawable.ic_settings,        R.string.menu_edit_profile);
-        bindMenuRow(bookingRequestsItem,   R.drawable.ic_info,            R.string.menu_booking_requests);
-        bindMenuRow(settingsItem,          R.drawable.ic_settings,        R.string.menu_settings);
-        bindMenuRow(paymentItem,           R.drawable.ic_payment,         R.string.menu_payment);
-        bindMenuRow(notificationItem,      R.drawable.ic_notifications,    R.string.menu_notification);
-        bindMenuRow(recentViewedItem,      R.drawable.ic_list,            R.string.menu_recent_viewed);
-        bindMenuRow(favoritesItem,         R.drawable.ic_bookmark,        R.string.menu_favorites);
-        bindMenuRow(aboutItem,             R.drawable.ic_info,            R.string.menu_about);
+        bindMenuRow(editProfileItem, R.drawable.ic_settings, R.string.menu_edit_profile);
+        bindMenuRow(bookingRequestsItem, R.drawable.ic_info, R.string.menu_booking_requests);
+        bindMenuRow(settingsItem, R.drawable.ic_settings, R.string.menu_settings);
+        bindMenuRow(paymentItem, R.drawable.ic_payment, R.string.menu_payment);
+        bindMenuRow(notificationItem, R.drawable.ic_notifications, R.string.menu_notification);
+        bindMenuRow(recentViewedItem, R.drawable.ic_list, R.string.menu_recent_viewed);
+        bindMenuRow(favoritesItem, R.drawable.ic_bookmark, R.string.menu_favorites);
+        bindMenuRow(aboutItem, R.drawable.ic_info, R.string.menu_about);
     }
 
     private void bindMenuRow(View row, @DrawableRes int iconRes, @StringRes int titleRes) {
@@ -137,14 +141,9 @@ public class ProfileFragment extends Fragment {
         }
         if (chevronView != null) {
             chevronView.setImageResource(R.drawable.ic_chevron_right);
-            // Optional tint for chevron to neutral grey:
             chevronView.setColorFilter(getResources().getColor(R.color.text_secondary));
         }
     }
-
-    // ----------------------------------
-    // Image picker & upload
-    // ----------------------------------
 
     private void setupImagePicker() {
         imagePickerLauncher = registerForActivityResult(
@@ -153,17 +152,24 @@ public class ProfileFragment extends Fragment {
                     if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                         selectedImageUri = result.getData().getData();
                         if (selectedImageUri != null) {
-                            uploadProfilePicture();
+                            if (currentImageType == IMAGE_TYPE_PROFILE) {
+                                uploadProfilePicture();
+                            } else if (currentImageType == IMAGE_TYPE_COVER) {
+                                uploadCoverImage();
+                            }
                         }
                     }
                 }
         );
     }
 
-    private void openImagePicker() {
+    private void openImagePicker(int imageType) {
+        currentImageType = imageType;
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         imagePickerLauncher.launch(intent);
     }
+
+    // ========== PROFILE PICTURE ==========
 
     private void uploadProfilePicture() {
         if (selectedImageUri == null) return;
@@ -253,9 +259,126 @@ public class ProfileFragment extends Fragment {
         showSkeletonLoading(false);
     }
 
-    // ----------------------------------
-    // Profile loading
-    // ----------------------------------
+    // ========== COVER IMAGE ==========
+
+    private void uploadCoverImage() {
+        if (selectedImageUri == null) return;
+
+        if (!isAdded() || getContext() == null) {
+            Log.e(TAG, "Fragment not attached, cannot upload cover");
+            return;
+        }
+
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            safeShowToast(getString(R.string.login_first));
+            return;
+        }
+
+        showSkeletonLoading(true);
+
+        // First, get the old cover URL to delete it later
+        firestore.collection("users").document(currentUser.getUid()).get()
+                .addOnSuccessListener(doc -> {
+                    String oldCoverUrl = doc.exists() ? doc.getString("coverUrl") : null;
+
+                    // Upload new cover image
+                    uploadCoverToStorage(currentUser.getUid(), oldCoverUrl);
+                })
+                .addOnFailureListener(e -> {
+                    // Continue with upload even if we can't get old URL
+                    uploadCoverToStorage(currentUser.getUid(), null);
+                });
+    }
+
+    private void uploadCoverToStorage(String userId, String oldCoverUrl) {
+        if (selectedImageUri == null) return;
+
+        String filename = "cover_" + userId + "_" + System.currentTimeMillis() + ".jpg";
+        StorageReference coverRef = storage.getReference()
+                .child("cover_images")
+                .child(filename);
+
+        coverRef.putFile(selectedImageUri)
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return coverRef.getDownloadUrl();
+                })
+                .addOnSuccessListener(downloadUri -> {
+                    if (!isAdded() || getContext() == null) return;
+
+                    String downloadUrl = downloadUri.toString();
+                    Log.d(TAG, "Cover image uploaded: " + downloadUrl);
+
+                    // Update Firestore with new cover URL
+                    updateCoverUrlInFirestore(userId, downloadUrl, oldCoverUrl);
+                })
+                .addOnFailureListener(e -> {
+                    if (!isAdded() || getContext() == null) return;
+
+                    Log.e(TAG, "Failed to upload cover image", e);
+                    safeShowToast("Failed to upload cover: " + e.getMessage());
+                    showSkeletonLoading(false);
+                });
+    }
+
+    private void updateCoverUrlInFirestore(String userId, String newCoverUrl, String oldCoverUrl) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("coverUrl", newCoverUrl);
+        updates.put("updatedAt", Timestamp.now());
+
+        firestore.collection("users").document(userId)
+                .update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    if (!isAdded() || getContext() == null) return;
+
+                    Log.d(TAG, "Cover image updated in Firestore");
+
+                    // Delete old cover image from storage
+                    if (oldCoverUrl != null && !oldCoverUrl.isEmpty()) {
+                        deleteOldCoverImage(oldCoverUrl);
+                    }
+
+                    updateUIWithNewCover(newCoverUrl);
+                })
+                .addOnFailureListener(e -> {
+                    if (!isAdded() || getContext() == null) return;
+                    Log.e(TAG, "Failed to update cover image in Firestore", e);
+                    safeShowToast("Failed to update cover: " + e.getMessage());
+                    showSkeletonLoading(false);
+                });
+    }
+
+    private void deleteOldCoverImage(String oldCoverUrl) {
+        try {
+            StorageReference oldRef = storage.getReferenceFromUrl(oldCoverUrl);
+            oldRef.delete()
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "Old cover image deleted successfully"))
+                    .addOnFailureListener(e -> Log.e(TAG, "Failed to delete old cover image", e));
+        } catch (Exception e) {
+            Log.e(TAG, "Error parsing old cover URL", e);
+        }
+    }
+
+    private void updateUIWithNewCover(String coverUrl) {
+        if (!isAdded() || getContext() == null) return;
+
+        if (coverImage != null) {
+            Glide.with(this)
+                    .load(coverUrl)
+                    .placeholder(R.drawable.ic_profile)
+                    .error(R.drawable.ic_profile)
+                    .centerCrop()
+                    .into(coverImage);
+        }
+
+        safeShowToast("Cover image updated successfully!");
+        showSkeletonLoading(false);
+    }
+
+    // ========== LOAD USER PROFILE ==========
 
     private void loadUserProfile() {
         showSkeletonLoading(true);
@@ -277,11 +400,13 @@ public class ProfileFragment extends Fragment {
                     String name = null;
                     String email = null;
                     String photoUrl = null;
+                    String coverUrl = null;
 
                     if (doc.exists()) {
                         name = doc.getString("displayName");
                         email = doc.getString("email");
                         photoUrl = doc.getString("photoUrl");
+                        coverUrl = doc.getString("coverUrl");
                     }
 
                     if (name == null || name.trim().isEmpty()) {
@@ -296,7 +421,7 @@ public class ProfileFragment extends Fragment {
                         }
                     }
 
-                    updateUI(name, email, photoUrl);
+                    updateUI(name, email, photoUrl, coverUrl);
                     showSkeletonLoading(false);
                 })
                 .addOnFailureListener(e -> {
@@ -305,7 +430,7 @@ public class ProfileFragment extends Fragment {
                     String email = currentUser.getEmail();
                     String photoUrl = (currentUser.getPhotoUrl() != null) ?
                             currentUser.getPhotoUrl().toString() : null;
-                    updateUI(name, email, photoUrl);
+                    updateUI(name, email, photoUrl, null);
                     showSkeletonLoading(false);
                 });
     }
@@ -324,7 +449,7 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void updateUI(String name, String email, String photoUrl) {
+    private void updateUI(String name, String email, String photoUrl, String coverUrl) {
         if (profileName != null) {
             profileName.setText(
                     (name != null && !name.trim().isEmpty())
@@ -353,11 +478,24 @@ public class ProfileFragment extends Fragment {
                 profileImage.setImageResource(R.drawable.ic_profile);
             }
         }
+
+        // Load cover image
+        if (coverImage != null) {
+            if (coverUrl != null && !coverUrl.trim().isEmpty()) {
+                Glide.with(this)
+                        .load(coverUrl)
+                        .placeholder(R.drawable.ic_profile)
+                        .error(R.drawable.ic_profile)
+                        .centerCrop()
+                        .into(coverImage);
+            } else {
+                // Use default gradient or placeholder
+                coverImage.setImageResource(R.drawable.ic_profile);
+            }
+        }
     }
 
-    // ----------------------------------
-    // Clicks
-    // ----------------------------------
+    // ========== CLICK LISTENERS ==========
 
     private void setupClickListeners() {
         if (rootView == null) {
@@ -365,8 +503,22 @@ public class ProfileFragment extends Fragment {
             return;
         }
 
+        // Profile picture click
         if (cameraIcon != null) {
-            cameraIcon.setOnClickListener(v -> openImagePicker());
+            cameraIcon.setOnClickListener(v -> openImagePicker(IMAGE_TYPE_PROFILE));
+        }
+
+        // Cover image click - using long click for safety
+        if (coverCameraIcon != null) {
+            coverCameraIcon.setOnClickListener(v -> openImagePicker(IMAGE_TYPE_COVER));
+        }
+
+        // Alternative: Long press on cover image itself
+        if (coverImage != null) {
+            coverImage.setOnLongClickListener(v -> {
+                openImagePicker(IMAGE_TYPE_COVER);
+                return true;
+            });
         }
 
         if (signOut != null) {
@@ -391,10 +543,6 @@ public class ProfileFragment extends Fragment {
             });
         }
     }
-
-    // ----------------------------------
-    // Sign out & helpers
-    // ----------------------------------
 
     private void handleSignOut() {
         auth.signOut();

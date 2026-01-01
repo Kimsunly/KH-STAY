@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="12dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp">
 
@@ -13,113 +16,147 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Property Title -->
-        <TextView
-            android:id="@+id/tvRentalTitle"
-            android:layout_width="wrap_content"
+        <!-- Header: Title and Status -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Property Title"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary" />
+            android:layout_marginBottom="12dp">
 
-        <!-- Guest Name -->
+            <TextView
+                android:id="@+id/tvRentalTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/tvStatus"
+                android:layout_marginEnd="8dp"
+                android:text="Modern House"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:maxLines="2"
+                android:ellipsize="end"/>
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:text="Pending"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:background="@drawable/bg_status_pending"/>
+        </RelativeLayout>
+
+        <!-- Guest Info -->
         <TextView
             android:id="@+id/tvGuestName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="Guest: John Doe"
-            android:textSize="15sp"
-            android:textColor="@color/text_primary" />
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="4dp"/>
 
-        <!-- Contact Info -->
         <TextView
             android:id="@+id/tvGuestContact"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="📱 +123456789 | 📧 email@example.com"
-            android:textSize="13sp"
-            android:textColor="@color/text_secondary" />
+            android:text="📱 +123456789 | 📧 john@email.com"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="8dp"/>
 
-        <!-- Dates -->
+        <!-- Booking Dates -->
         <TextView
             android:id="@+id/tvBookingDates"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="📅 Jan 1 - Jan 7, 2025 (7 days)"
-            android:textSize="14sp"
-            android:textColor="@color/text_primary" />
+            android:text="📅 Jan 15, 2024 - Jan 20, 2024 (5 days)"
+            android:textSize="13sp"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="4dp"/>
 
-        <!-- Price -->
+        <!-- Total Price -->
         <TextView
             android:id="@+id/tvTotalPrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="💰 Total: $280.00"
-            android:textSize="15sp"
+            android:text="💰 Total: $500.00"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="@color/primary" />
+            android:textColor="@color/primary"
+            android:layout_marginBottom="8dp"/>
 
-        <!-- Status Badge -->
+        <!-- Notes (optional) -->
         <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="wrap_content"
+            android:id="@+id/tvNotes"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:background="@drawable/bg_status_pending"
-            android:text="Pending"
+            android:text="Notes: Need parking space"
             android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary" />
+            android:textColor="@color/text_secondary"
+            android:textStyle="italic"
+            android:padding="8dp"
+            android:background="@drawable/bg_notes"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone"/>
 
-        <!-- Action Buttons (for pending bookings) -->
+        <!-- Action Buttons -->
         <LinearLayout
             android:id="@+id/actionButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
             android:orientation="horizontal"
-            android:gravity="end"
-            android:visibility="gone">
+            android:gravity="end">
 
+            <!-- Delete Button (for approved/rejected/cancelled) -->
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Remove"
+                android:textSize="14sp"
+                android:textColor="@color/error_red"
+                android:background="@drawable/bg_button_outline_red"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:visibility="gone"/>
+
+            <!-- Reject Button (for pending only) -->
             <Button
                 android:id="@+id/btnReject"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:text="Reject"
+                android:textSize="14sp"
                 android:textColor="@color/error_red"
-                android:background="@drawable/edit_text_background"
-                android:layout_marginEnd="8dp"
-                style="?android:attr/borderlessButtonStyle" />
+                android:background="@drawable/bg_button_outline_red"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:layout_marginEnd="8dp"/>
 
+            <!-- Approve Button (for pending only) -->
             <Button
                 android:id="@+id/btnApprove"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:text="Approve"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="@color/success_green" />
+                android:textSize="14sp"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_button_outline_gray"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"/>
         </LinearLayout>
-
-        <!-- Notes (if any) -->
-        <TextView
-            android:id="@+id/tvNotes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Notes: Guest message here..."
-            android:textSize="13sp"
-            android:textColor="@color/text_secondary"
-            android:visibility="gone" />
-
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>

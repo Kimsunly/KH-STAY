@@ -23,6 +23,7 @@ import com.khstay.myapplication.ui.chat.model.Conversation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ConversationsActivity extends AppCompatActivity {
 
@@ -103,6 +104,26 @@ public class ConversationsActivity extends AppCompatActivity {
                 for (DocumentChange dc : snapshots.getDocumentChanges()) {
                     Conversation conversation = dc.getDocument().toObject(Conversation.class);
                     conversation.setId(dc.getDocument().getId());
+
+                    // ✅ CHECK IF DELETED FOR CURRENT USER
+                    Map<String, Object> deletedFor = (Map<String, Object>)
+                            dc.getDocument().get("deletedFor");
+
+                    if (deletedFor != null && deletedFor.containsKey(currentUserId)) {
+                        Boolean isDeleted = (Boolean) deletedFor.get(currentUserId);
+                        if (isDeleted != null && isDeleted) {
+                            // Skip this conversation - it's deleted for this user
+                            // But remove it from list if it was already there
+                            for (int i = 0; i < conversationList.size(); i++) {
+                                if (conversationList.get(i).getId().equals(conversation.getId())) {
+                                    conversationList.remove(i);
+                                    conversationAdapter.notifyItemRemoved(i);
+                                    break;
+                                }
+                            }
+                            continue;
+                        }
+                    }
 
                     // Determine the other user ID
                     String otherUserId = null;

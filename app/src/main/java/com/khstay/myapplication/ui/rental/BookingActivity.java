@@ -17,6 +17,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.khstay.myapplication.R;
+import com.khstay.myapplication.data.firebase.BookingService;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -40,6 +41,7 @@ public class BookingActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
     private FirebaseAuth auth;
+    private BookingService bookingService;
 
     private String rentalId;
     private String rentalTitle;
@@ -50,7 +52,6 @@ public class BookingActivity extends AppCompatActivity {
     private Calendar checkOutCalendar;
     private SimpleDateFormat dateFormat;
 
-    // 🎨 Skeleton loading
     private com.facebook.shimmer.ShimmerFrameLayout shimmerBooking;
     private View contentLayout;
 
@@ -61,6 +62,7 @@ public class BookingActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         auth = FirebaseAuth.getInstance();
+        bookingService = new BookingService();
         dateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
 
         // Get data from intent
@@ -94,7 +96,6 @@ public class BookingActivity extends AppCompatActivity {
         tvCheckOutDate = findViewById(R.id.tvCheckOutDate);
         btnConfirmBooking = findViewById(R.id.btnConfirmBooking);
 
-        // 🎨 Initialize skeleton views
         try {
             shimmerBooking = findViewById(R.id.shimmerBooking);
             contentLayout = findViewById(R.id.contentLayout);
@@ -120,7 +121,6 @@ public class BookingActivity extends AppCompatActivity {
             return;
         }
 
-        // 🎨 Show skeleton loading
         showSkeletonLoading(true);
 
         String uid = auth.getCurrentUser().getUid();
@@ -137,17 +137,14 @@ public class BookingActivity extends AppCompatActivity {
                         if (email != null) etEmail.setText(email);
                     }
 
-                    // 🎨 Hide skeleton after data loaded
                     showSkeletonLoading(false);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error loading user data", e);
-                    // 🎨 Hide skeleton even on error
                     showSkeletonLoading(false);
                 });
     }
 
-    // 🎨 Helper method to show/hide skeleton
     private void showSkeletonLoading(boolean show) {
         if (shimmerBooking != null && contentLayout != null) {
             if (show) {
@@ -214,31 +211,21 @@ public class BookingActivity extends AppCompatActivity {
         tvTotalPrice.setText(String.format("Total: $%.2f (%d days)", total, days));
     }
 
+
     private void confirmBooking() {
         String fullName = etFullName.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String email = etEmail.getText().toString().trim();
-        String notes = etNotes.getText().toString().trim();
+        String phone    = etPhone.getText().toString().trim();
+        String email    = etEmail.getText().toString().trim();
+        String notes    = etNotes.getText().toString().trim();
 
-        // Validation
-        if (TextUtils.isEmpty(fullName)) {
-            etFullName.setError("Name required");
-            return;
-        }
-        if (TextUtils.isEmpty(phone)) {
-            etPhone.setError("Phone required");
-            return;
-        }
-        if (TextUtils.isEmpty(email)) {
-            etEmail.setError("Email required");
-            return;
-        }
+        // Validation...
+        if (TextUtils.isEmpty(fullName)) { etFullName.setError("Name required"); return; }
+        if (TextUtils.isEmpty(phone))    { etPhone.setError("Phone required"); return; }
+        if (TextUtils.isEmpty(email))    { etEmail.setError("Email required"); return; }
         if (checkInCalendar == null || checkOutCalendar == null) {
-            Toast.makeText(this, "Please select check-in and check-out dates",
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please select check-in and check-out dates", Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (auth.getCurrentUser() == null) {
             Toast.makeText(this, "Please login to book", Toast.LENGTH_SHORT).show();
             return;
@@ -247,13 +234,19 @@ public class BookingActivity extends AppCompatActivity {
         btnConfirmBooking.setEnabled(false);
         btnConfirmBooking.setText("Processing...");
 
-        // Create booking document
+        long diffInMillis = checkOutCalendar.getTimeInMillis() - checkInCalendar.getTimeInMillis();
+        int days = (int) (diffInMillis / (1000 * 60 * 60 * 24));
+        double dailyRate = rentalPrice / 30.0;
+        double total = dailyRate * days;
+
         Map<String, Object> booking = new HashMap<>();
         booking.put("rentalId", rentalId);
-        booking.put("rentalTitle", rentalTitle);
+        booking.put("rentalTitle", rentalTitle);     // OK to keep for UI; service will overwrite from rental doc
         booking.put("rentalPrice", rentalPrice);
-        booking.put("ownerId", ownerId);
-        booking.put("userId", auth.getCurrentUser().getUid());
+        // 🚫 DO NOT pass ownerId here — service will fetch from rental doc
+        // booking.put("ownerId", ownerId); // REMOVE THIS LINE
+
+        booking.put("userId", auth.getCurrentUser().getUid()); // service overwrites anyway (safe)
         booking.put("guestName", fullName);
         booking.put("guestPhone", phone);
         booking.put("guestEmail", email);
@@ -262,26 +255,19 @@ public class BookingActivity extends AppCompatActivity {
         booking.put("checkOutDate", new Timestamp(checkOutCalendar.getTime()));
         booking.put("status", "pending");
         booking.put("createdAt", Timestamp.now());
-
-        // Calculate total
-        long diffInMillis = checkOutCalendar.getTimeInMillis() - checkInCalendar.getTimeInMillis();
-        int days = (int) (diffInMillis / (1000 * 60 * 60 * 24));
-        double dailyRate = rentalPrice / 30.0;
-        double total = dailyRate * days;
         booking.put("totalPrice", total);
         booking.put("numberOfDays", days);
 
-        db.collection("bookings")
-                .add(booking)
+        new BookingService().createBookingWithNotification(booking)
                 .addOnSuccessListener(docRef -> {
-                    Toast.makeText(this, "Booking successful!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Booking successful! Owner has been notified.", Toast.LENGTH_LONG).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Booking failed: " + e.getMessage(),
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Booking failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     btnConfirmBooking.setEnabled(true);
                     btnConfirmBooking.setText("Confirm Booking");
+                    Log.e(TAG, "Booking failed", e);
                 });
     }
 }

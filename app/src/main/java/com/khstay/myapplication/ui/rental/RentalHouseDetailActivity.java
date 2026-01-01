@@ -1,4 +1,3 @@
-
 package com.khstay.myapplication.ui.rental;
 
 import android.Manifest;
@@ -20,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
 import com.facebook.shimmer.ShimmerFrameLayout;
@@ -29,28 +29,36 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.khstay.myapplication.R;
 import com.khstay.myapplication.common.IntentKeys;
 import com.khstay.myapplication.data.repository.UserRepository;
+import com.khstay.myapplication.ui.rental.adapters.ImageSliderAdapter;
 import com.khstay.myapplication.ui.rental.model.Rental;
+import com.google.firebase.firestore.FieldValue;
+import com.khstay.myapplication.utils.PopularityScoreHelper;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RentalHouseDetailActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    public static final String EXTRA_RENTAL_ID = "RENTAL_ID"; // legacy key still supported
+    public static final String EXTRA_RENTAL_ID = "RENTAL_ID";
     private static final int REQ_LOCATION = 1011;
     private static final String TAG = "RentalDetailActivity";
 
-    // Firebase
     private FirebaseFirestore db;
     private UserRepository userRepository;
 
     // Views
-    private ImageView ivHeaderImage, ivOwnerAvatar;
-    private ImageButton btnBack, btnFavorite, btnCallOwner, btnChatOwner;
+    private ViewPager2 viewPagerImages;
+    private TabLayout tabIndicator;
+    private ImageView ivOwnerAvatar;
+    private ImageButton btnBack, btnFavorite, btnCallOwner, btnChatOwner, btnShare;
     private TextView tvTitle, tvPrice, tvLocation, tvDescription;
-    private TextView tvOwnerName, tvOwnerRole;
+    private TextView tvOwnerName, tvOwnerRole, tvImageCounter;
     private Button btnViewMore, btnBookNow, btnOpenMap;
     private ProgressBar progressBar;
     private MapView mapView;
@@ -64,10 +72,11 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
     private boolean expanded = false;
     private boolean isFavorited = false;
 
-    // Owner info
     private String ownerPhone = null;
     private String ownerName = null;
     private String ownerAvatarUrl = null;
+
+    private ImageSliderAdapter imageSliderAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -77,14 +86,11 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
         db = FirebaseFirestore.getInstance();
         userRepository = new UserRepository();
 
-        // ---- Read rentalId robustly (canonical + legacy fallback) ----
         rentalId = getIntent().getStringExtra(IntentKeys.RENTAL_ID);
         if (TextUtils.isEmpty(rentalId)) {
-            // legacy extra name in some older code paths
             rentalId = getIntent().getStringExtra(IntentKeys.PROPERTY_ID);
         }
         if (TextUtils.isEmpty(rentalId)) {
-            // also support your legacy constant if some callers still use EXTRA_RENTAL_ID
             rentalId = getIntent().getStringExtra(EXTRA_RENTAL_ID);
         }
         if (TextUtils.isEmpty(rentalId)) {
@@ -96,21 +102,23 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
         initializeViews();
         setupClickListeners();
 
-        // Initialize map safely
         if (mapView != null) {
             mapView.onCreate(savedInstanceState);
             mapView.getMapAsync(this);
         }
 
-        // Load data
         loadRental();
         checkIfFavorited();
     }
 
     private void initializeViews() {
-        ivHeaderImage = findViewById(R.id.iv_header_image);
+        viewPagerImages = findViewById(R.id.viewPagerImages);
+        tabIndicator = findViewById(R.id.tabIndicator);
+        tvImageCounter = findViewById(R.id.tvImageCounter);
+
         btnBack = findViewById(R.id.btn_back);
         btnFavorite = findViewById(R.id.btn_favorite);
+        btnShare = findViewById(R.id.btn_share);
 
         tvTitle = findViewById(R.id.tv_title);
         tvPrice = findViewById(R.id.tv_price);
@@ -144,6 +152,8 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
 
         btnFavorite.setOnClickListener(v -> toggleFavorite());
 
+        btnShare.setOnClickListener(v -> shareRental());
+
         btnViewMore.setOnClickListener(v -> toggleDescription());
 
         btnBookNow.setOnClickListener(v -> {
@@ -172,7 +182,6 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
 
         btnChatOwner.setOnClickListener(v -> {
             if (rental != null && !TextUtils.isEmpty(rental.getOwnerId())) {
-                // Open chat with owner
                 Intent intent = new Intent(this, com.khstay.myapplication.ui.chat.ChatActivity.class);
                 intent.putExtra(com.khstay.myapplication.ui.chat.ChatActivity.EXTRA_OTHER_USER_ID, rental.getOwnerId());
                 intent.putExtra(com.khstay.myapplication.ui.chat.ChatActivity.EXTRA_OTHER_USER_NAME,
@@ -186,6 +195,28 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
         });
     }
 
+    private void shareRental() {
+        if (rental == null) return;
+
+        String shareText = "Check out this property on KHSTAY!\n\n" +
+                "🏠 " + rental.getTitle() + "\n" +
+                "📍 " + rental.getLocation() + "\n" +
+                "💰 $" + (rental.getPrice() != null ? rental.getPrice().intValue() : 0) + "/month\n\n" +
+                (rental.getDescription() != null ? rental.getDescription() + "\n\n" : "") +
+                "View details: [Your App Link or Website]";
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, rental.getTitle());
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+
+        try {
+            startActivity(Intent.createChooser(shareIntent, "Share property via"));
+        } catch (android.content.ActivityNotFoundException e) {
+            Toast.makeText(this, "No apps available to share", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void checkIfFavorited() {
         if (userRepository.isFavorite(rentalId) != null) {
             userRepository.isFavorite(rentalId)
@@ -193,9 +224,7 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
                         isFavorited = isFav;
                         updateFavoriteIcon();
                     })
-                    .addOnFailureListener(e -> {
-                        Log.e(TAG, "Failed to check favorite status", e);
-                    });
+                    .addOnFailureListener(e -> Log.e(TAG, "Failed to check favorite status", e));
         }
     }
 
@@ -203,7 +232,6 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
         if (rental == null) return;
 
         if (isFavorited) {
-            // Remove from favorites
             userRepository.removeFavorite(rentalId)
                     .addOnSuccessListener(aVoid -> {
                         isFavorited = false;
@@ -215,15 +243,9 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
                         Toast.makeText(this, "Failed to update favorites", Toast.LENGTH_SHORT).show();
                     });
         } else {
-            // Add to favorites
             String propertyPrice = "$" + (rental.getPrice() != null ? rental.getPrice().intValue() : 0) + "/month";
-            userRepository.addFavorite(
-                            rentalId,
-                            rental.getTitle(),
-                            rental.getImageUrl(),
-                            propertyPrice,
-                            rental.getLocation()
-                    )
+            userRepository.addFavorite(rentalId, rental.getTitle(), rental.getImageUrl(),
+                            propertyPrice, rental.getLocation())
                     .addOnSuccessListener(aVoid -> {
                         isFavorited = true;
                         updateFavoriteIcon();
@@ -242,13 +264,11 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
     }
 
     private void loadRental() {
-        // Show skeleton
         if (shimmerDetail != null) {
             shimmerDetail.startShimmer();
             shimmerDetail.setVisibility(View.VISIBLE);
         }
 
-        // Hide actual content
         if (contentLayout != null) {
             contentLayout.setVisibility(View.GONE);
         }
@@ -258,13 +278,11 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
                 .document(rentalId)
                 .get()
                 .addOnSuccessListener(d -> {
-                    // Hide skeleton
                     if (shimmerDetail != null) {
                         shimmerDetail.stopShimmer();
                         shimmerDetail.setVisibility(View.GONE);
                     }
 
-                    // Show content
                     if (contentLayout != null) {
                         contentLayout.setVisibility(View.VISIBLE);
                     }
@@ -282,27 +300,65 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
                     }
                     rental.setId(d.getId());
                     bindRentalToViews(rental);
+                    setupImageSlider(rental);
                     fetchOwnerIfAvailable(rental.getOwnerId());
                     updateMapMarkerIfReady();
-
-                    // Track recent view (use canonical rentalId)
                     trackRecentView(rental);
                 })
                 .addOnFailureListener(e -> {
-                    // Hide skeleton on error
                     if (shimmerDetail != null) {
                         shimmerDetail.stopShimmer();
                         shimmerDetail.setVisibility(View.GONE);
                     }
-
                     Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     finish();
                 });
     }
 
-    /**
-     * Track that user viewed this property
-     */
+    private void setupImageSlider(Rental rental) {
+        List<String> imageUrls = rental.getImageUrls();
+
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            // Fallback to single image if no imageUrls
+            imageUrls = new ArrayList<>();
+            if (rental.getImageUrl() != null && !rental.getImageUrl().isEmpty()) {
+                imageUrls.add(rental.getImageUrl());
+            }
+        }
+
+        // Make imageUrls effectively final by storing size
+        final int imageCount = imageUrls.size();
+        final List<String> finalImageUrls = imageUrls; // Create final reference
+
+        imageSliderAdapter = new ImageSliderAdapter(this, finalImageUrls);
+        viewPagerImages.setAdapter(imageSliderAdapter);
+
+        // Show indicator only if multiple images
+        if (imageCount > 1) {
+            tabIndicator.setVisibility(View.VISIBLE);
+            tvImageCounter.setVisibility(View.VISIBLE);
+
+            // Attach TabLayout to ViewPager2
+            new TabLayoutMediator(tabIndicator, viewPagerImages, (tab, position) -> {
+                // Optional: customize tab appearance
+            }).attach();
+
+            // Update counter on page change
+            viewPagerImages.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    super.onPageSelected(position);
+                    tvImageCounter.setText((position + 1) + " / " + imageCount);
+                }
+            });
+
+            tvImageCounter.setText("1 / " + imageCount);
+        } else {
+            tabIndicator.setVisibility(View.GONE);
+            tvImageCounter.setVisibility(View.GONE);
+        }
+    }
+
     private void trackRecentView(Rental rental) {
         if (rental == null) return;
 
@@ -312,36 +368,19 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
         String propertyPrice = "$" + (rental.getPrice() != null ? rental.getPrice().intValue() : 0) + "/month";
         String propertyLocation = rental.getLocation();
 
-        // This should call repository → service that writes "rentalId" field
+        // Track in user's recent views (existing functionality)
         userRepository.addRecentView(canonicalRentalId, propertyName, propertyImage, propertyPrice, propertyLocation)
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "Recent view tracked successfully"))
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to track recent view", e));
+
+        // NEW: Increment view count and update popularity score (HYBRID SYSTEM)
+        PopularityScoreHelper.incrementViewCount(canonicalRentalId);
     }
 
     private void bindRentalToViews(@NonNull Rental r) {
-        // Header image
-        String url = r.getImageUrl();
-        if (url != null && !url.trim().isEmpty()) {
-            Glide.with(this)
-                    .load(url)
-                    .placeholder(R.drawable.ic_placeholder)
-                    .error(R.drawable.ic_placeholder)
-                    .centerCrop()
-                    .into(ivHeaderImage);
-        } else if (r.getImageResId() != 0) {
-            ivHeaderImage.setImageResource(r.getImageResId());
-        } else {
-            ivHeaderImage.setImageResource(R.drawable.ic_placeholder);
-        }
-
-        // Title & Price
         tvTitle.setText(safe(r.getTitle()));
         tvPrice.setText(formatPrice(r.getPrice()));
-
-        // Location
         tvLocation.setText(safe(r.getLocation()));
-
-        // Description
         tvDescription.setText(safe(r.getDescription()));
         applyCollapsedDescription();
     }
@@ -389,14 +428,11 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
     @Override
     public void onMapReady(@NonNull GoogleMap map) {
         this.googleMap = map;
-
         googleMap.getUiSettings().setZoomControlsEnabled(true);
         googleMap.getUiSettings().setMapToolbarEnabled(false);
 
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             googleMap.setMyLocationEnabled(true);
         }
 
@@ -461,8 +497,6 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
         return s == null ? "" : s;
     }
 
-    // ---------------- MapView lifecycle (null-guarded to avoid NPE) ----------------
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -473,7 +507,7 @@ public class RentalHouseDetailActivity extends AppCompatActivity implements OnMa
     protected void onResume() {
         super.onResume();
         if (mapView != null) mapView.onResume();
-        checkIfFavorited(); // Refresh favorite status when returning to this activity
+        checkIfFavorited();
     }
 
     @Override

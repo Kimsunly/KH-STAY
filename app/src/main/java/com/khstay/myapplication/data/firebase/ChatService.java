@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
+import com.khstay.myapplication.utils.FCMHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,10 +26,12 @@ public class ChatService {
     private static final String TAG = "ChatService";
     private final FirebaseFirestore db;
     private final FirebaseAuth auth;
+    private final NotificationService notificationService;
 
     public ChatService() {
         this.db = FirebaseFirestore.getInstance();
         this.auth = FirebaseAuth.getInstance();
+        this.notificationService = new NotificationService();
     }
 
     /**
@@ -94,7 +97,7 @@ public class ChatService {
     }
 
     /**
-     * Send a message in a conversation
+     * Send a message in a conversation (with push notification)
      */
     public Task<Void> sendMessage(String conversationId, String messageText, String receiverId) {
         String senderId = auth.getCurrentUser().getUid();
@@ -106,6 +109,8 @@ public class ChatService {
         message.put("message", messageText);
         message.put("timestamp", Timestamp.now());
         message.put("read", false);
+        message.put("edited", false);
+        message.put("deleted", false);
 
         // Use batch write to update conversation and add message
         WriteBatch batch = db.batch();
@@ -127,7 +132,147 @@ public class ChatService {
 
         batch.update(conversationRef, conversationUpdate);
 
-        return batch.commit();
+        return batch.commit().continueWithTask(task -> {
+            if (!task.isSuccessful()) {
+                throw task.getException();
+            }
+
+            // Get sender info and send notifications
+            return getUserInfo(senderId).continueWithTask(userTask -> {
+                if (!userTask.isSuccessful()) {
+                    return Tasks.forResult(null);
+                }
+
+                Map<String, String> userInfo = userTask.getResult();
+                String senderName = userInfo.get("displayName");
+                String senderPhoto = userInfo.get("photoUrl");
+
+                // 1. Send in-app notification
+                Task<Void> inAppNotification = notificationService.createNotification(
+                        receiverId,
+                        "New message from " + senderName,
+                        messageText,
+                        "chat"
+                );
+
+                // 2. Send push notification
+                FCMHelper.sendChatMessageNotification(
+                        receiverId,
+                        senderName,
+                        messageText,
+                        senderId,
+                        senderPhoto
+                );
+
+                return inAppNotification;
+            });
+        });
+    }
+
+    /**
+     * Edit a message
+     */
+    public Task<Void> editMessage(String conversationId, String messageId, String newText) {
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        return db.collection("conversations")
+                .document(conversationId)
+                .collection("messages")
+                .document(messageId)
+                .get()
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+
+                    DocumentSnapshot doc = task.getResult();
+                    String senderId = doc.getString("senderId");
+
+                    // Only sender can edit their message
+                    if (!currentUserId.equals(senderId)) {
+                        throw new SecurityException("You can only edit your own messages");
+                    }
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("message", newText);
+                    updates.put("edited", true);
+                    updates.put("editedAt", Timestamp.now());
+
+                    return db.collection("conversations")
+                            .document(conversationId)
+                            .collection("messages")
+                            .document(messageId)
+                            .update(updates);
+                });
+    }
+
+    /**
+     * Delete a message (soft delete)
+     */
+    public Task<Void> deleteMessage(String conversationId, String messageId) {
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        return db.collection("conversations")
+                .document(conversationId)
+                .collection("messages")
+                .document(messageId)
+                .get()
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+
+                    DocumentSnapshot doc = task.getResult();
+                    String senderId = doc.getString("senderId");
+
+                    // Only sender can delete their message
+                    if (!currentUserId.equals(senderId)) {
+                        throw new SecurityException("You can only delete your own messages");
+                    }
+
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("deleted", true);
+                    updates.put("message", "This message was deleted");
+                    updates.put("deletedAt", Timestamp.now());
+
+                    return db.collection("conversations")
+                            .document(conversationId)
+                            .collection("messages")
+                            .document(messageId)
+                            .update(updates);
+                });
+    }
+
+    /**
+     * Delete entire conversation for current user
+     */
+    public Task<Void> deleteConversation(String conversationId) {
+        String currentUserId = auth.getCurrentUser().getUid();
+
+        return db.collection("conversations")
+                .document(conversationId)
+                .get()
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+
+                    DocumentSnapshot doc = task.getResult();
+                    List<String> participantIds = (List<String>) doc.get("participantIds");
+
+                    if (participantIds == null || !participantIds.contains(currentUserId)) {
+                        throw new SecurityException("You are not a participant in this conversation");
+                    }
+
+                    // Mark conversation as deleted for current user
+                    Map<String, Object> updates = new HashMap<>();
+                    updates.put("deletedFor." + currentUserId, true);
+                    updates.put("deletedAt." + currentUserId, Timestamp.now());
+
+                    return db.collection("conversations")
+                            .document(conversationId)
+                            .update(updates);
+                });
     }
 
     /**
@@ -197,11 +342,29 @@ public class ChatService {
     }
 
     /**
-     * Delete a conversation
+     * Get user info (display name and photo)
      */
-    public Task<Void> deleteConversation(String conversationId) {
-        return db.collection("conversations")
-                .document(conversationId)
-                .delete();
+    private Task<Map<String, String>> getUserInfo(String userId) {
+        return db.collection("users")
+                .document(userId)
+                .get()
+                .continueWith(task -> {
+                    Map<String, String> info = new HashMap<>();
+
+                    if (task.isSuccessful() && task.getResult().exists()) {
+                        DocumentSnapshot doc = task.getResult();
+                        String name = doc.getString("displayName");
+                        String photo = doc.getString("photoUrl");
+
+                        info.put("displayName", name != null ? name : "User");
+                        info.put("photoUrl", photo != null ? photo : "");
+                    } else {
+                        info.put("displayName", "User");
+                        info.put("photoUrl", "");
+                    }
+
+                    return info;
+                });
     }
 }
+

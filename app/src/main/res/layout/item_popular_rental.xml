@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="200dp"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_marginEnd="16dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp">
@@ -13,13 +13,52 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ImageView
-            android:id="@+id/imgHouse"
+        <!-- Image Container with Badge -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:scaleType="centerCrop"
-            tools:src="@drawable/house_image"/>
+            android:layout_height="150dp">
 
+            <ImageView
+                android:id="@+id/imgHouse"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                tools:src="@drawable/house_image"/>
+
+            <!-- Popularity Badge (Top Right) -->
+            <LinearLayout
+                android:id="@+id/popularityBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="8dp"
+                android:background="@drawable/badge_popularity"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_fire"
+                    android:contentDescription="Popular" />
+
+                <TextView
+                    android:id="@+id/tvPopularityScore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="125"
+                    android:textColor="@android:color/white"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Details Container -->
         <LinearLayout
             android:padding="12dp"
             android:orientation="vertical"
@@ -31,25 +70,80 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#000"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                tools:text="Modern House"/>
 
             <TextView
                 android:id="@+id/tvLocation"
                 android:textSize="12sp"
                 android:textColor="#999"
                 android:layout_marginTop="4dp"
+                android:maxLines="1"
+                android:ellipsize="end"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                tools:text="Sen Sok, Phnom Penh"/>
 
-            <TextView
-                android:id="@+id/tvPrice"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#FF6B35"
-                android:layout_marginTop="8dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+            <!-- Stats Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Views -->
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/ic_eye"
+                    android:contentDescription="Views"
+                    app:tint="@color/text_hint" />
+
+                <TextView
+                    android:id="@+id/tvViews"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="2dp"
+                    android:text="42"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_hint" />
+
+                <!-- Favorites -->
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_favorite_outline"
+                    android:contentDescription="Favorites"
+                    app:tint="@color/text_hint" />
+
+                <TextView
+                    android:id="@+id/tvFavorites"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="2dp"
+                    android:text="8"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_hint" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tvPrice"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#FF6B35"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="$420"/>
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
