@@ -3,7 +3,6 @@ package com.khstay.myapplication.ui.rental;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -19,6 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.khstay.myapplication.R;
+import com.khstay.myapplication.data.firebase.BookingService;
 import com.khstay.myapplication.ui.rental.adapters.BookingRequestAdapter;
 import com.khstay.myapplication.ui.rental.model.BookingRequest;
 
@@ -40,6 +40,7 @@ public class BookingRequestsActivity extends AppCompatActivity {
 
     private FirebaseAuth auth;
     private FirebaseFirestore db;
+    private BookingService bookingService;
     private String currentUserId;
 
     private ListenerRegistration bookingsListener;
@@ -52,6 +53,7 @@ public class BookingRequestsActivity extends AppCompatActivity {
         // Initialize Firebase
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        bookingService = new BookingService();
 
         if (auth.getCurrentUser() == null) {
             finish();
@@ -82,6 +84,11 @@ public class BookingRequestsActivity extends AppCompatActivity {
             @Override
             public void onReject(BookingRequest booking) {
                 showRejectDialog(booking);
+            }
+
+            @Override
+            public void onDelete(BookingRequest booking) {
+                showDeleteDialog(booking);
             }
         });
 
@@ -153,7 +160,7 @@ public class BookingRequestsActivity extends AppCompatActivity {
     private void showApproveDialog(BookingRequest booking) {
         new AlertDialog.Builder(this)
                 .setTitle("Approve Booking")
-                .setMessage("Approve this booking request?\n\nThis will change the property status to 'pending' (booked).")
+                .setMessage("Approve this booking request?\n\nThis will change the property status to 'pending' (booked) and notify the guest.")
                 .setPositiveButton("Approve", (dialog, which) -> {
                     approveBooking(booking);
                 })
@@ -164,7 +171,7 @@ public class BookingRequestsActivity extends AppCompatActivity {
     private void showRejectDialog(BookingRequest booking) {
         new AlertDialog.Builder(this)
                 .setTitle("Reject Booking")
-                .setMessage("Are you sure you want to reject this booking request?")
+                .setMessage("Are you sure you want to reject this booking request? The guest will be notified.")
                 .setPositiveButton("Reject", (dialog, which) -> {
                     rejectBooking(booking);
                 })
@@ -172,16 +179,37 @@ public class BookingRequestsActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void approveBooking(BookingRequest booking) {
-        // Update booking status
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("status", "approved");
+    private void showDeleteDialog(BookingRequest booking) {
+        String status = booking.getStatus() != null ? booking.getStatus() : "pending";
+        String message;
 
-        db.collection("bookings")
-                .document(booking.getId())
-                .update(updates)
+        if ("pending".equals(status)) {
+            message = "Delete this pending booking request?\n\nThe guest will be notified.";
+        } else {
+            message = "Remove this " + status + " booking from your list?\n\nThis cannot be undone.";
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Booking")
+                .setMessage(message)
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    deleteBooking(booking);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void approveBooking(BookingRequest booking) {
+        // Use BookingService to update status with notification
+        bookingService.updateBookingStatus(
+                        booking.getId(),
+                        "approved",
+                        booking.getUserId(),
+                        booking.getRentalTitle()
+                )
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Booking approved!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Booking approved! Guest has been notified.",
+                            Toast.LENGTH_SHORT).show();
 
                     // Update rental house status to "pending" (booked)
                     updateRentalStatus(booking.getRentalId(), "pending");
@@ -193,19 +221,43 @@ public class BookingRequestsActivity extends AppCompatActivity {
     }
 
     private void rejectBooking(BookingRequest booking) {
-        // Update booking status
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("status", "rejected");
-
-        db.collection("bookings")
-                .document(booking.getId())
-                .update(updates)
+        // Use BookingService to update status with notification
+        bookingService.updateBookingStatus(
+                        booking.getId(),
+                        "rejected",
+                        booking.getUserId(),
+                        booking.getRentalTitle()
+                )
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Booking rejected", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Booking rejected. Guest has been notified.",
+                            Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to reject booking", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "Reject failed", e);
+                });
+    }
+
+    private void deleteBooking(BookingRequest booking) {
+        // Delete booking and notify guest
+        bookingService.deleteBookingWithNotification(
+                        booking.getId(),
+                        booking.getUserId(),
+                        "owner",
+                        booking.getRentalTitle()
+                )
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Booking removed successfully",
+                            Toast.LENGTH_SHORT).show();
+
+                    // If approved booking was deleted, revert rental to active
+                    if ("approved".equals(booking.getStatus())) {
+                        updateRentalStatus(booking.getRentalId(), "active");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to delete booking", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Delete failed", e);
                 });
     }
 

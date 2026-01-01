@@ -60,21 +60,71 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingTop="32dp"
-                android:paddingBottom="32dp">
+                android:orientation="vertical">
 
-                <!-- Profile Picture with Camera Icon -->
+                <!-- Cover Image Section -->
+                <FrameLayout
+                    android:id="@+id/coverImageContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="#E0E0E0">
+
+                    <!-- Cover Image -->
+                    <ImageView
+                        android:id="@+id/coverImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_profile"
+                        android:contentDescription="@string/content_desc_cover_image" />
+
+                    <!-- Camera Icon for Cover (Bottom Right) -->
+                    <ImageView
+                        android:id="@+id/coverCameraIcon"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="16dp"
+                        android:src="@drawable/ic_camera"
+                        android:contentDescription="@string/change_cover_photo"
+                        android:background="@drawable/orange_circle"
+                        android:padding="8dp"
+                        android:elevation="4dp" />
+
+                    <!-- Overlay hint text (optional) -->
+                    <TextView
+                        android:id="@+id/coverHintText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="Tap to change cover"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:background="#80000000"
+                        android:padding="8dp"
+                        android:visibility="gone" />
+                </FrameLayout>
+
+                <!-- Profile Picture with Camera Icon (Overlapping cover) -->
                 <FrameLayout
                     android:id="@+id/profilePictureFrame"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_gravity="center_horizontal">
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="-60dp"
+                    android:elevation="8dp">
+
+                    <!-- White border around profile pic -->
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/circle_white_border" />
 
                     <ImageView
                         android:id="@+id/profileImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_width="110dp"
+                        android:layout_height="110dp"
+                        android:layout_gravity="center"
                         android:src="@drawable/ic_profile"
                         android:scaleType="centerCrop"
                         android:background="@drawable/circle_background"
@@ -89,7 +139,8 @@
                         android:src="@drawable/ic_camera"
                         android:contentDescription="@string/change_photo"
                         android:background="@drawable/orange_circle"
-                        android:padding="6dp" />
+                        android:padding="6dp"
+                        android:elevation="2dp" />
                 </FrameLayout>
 
                 <!-- Name -->
@@ -99,7 +150,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:text="@string/profile_name_placeholder"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/black"
                     android:layout_marginTop="16dp" />
@@ -120,7 +171,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginTop="48dp"
+                    android:layout_marginTop="32dp"
                     android:paddingStart="24dp"
                     android:paddingEnd="24dp">
 
@@ -192,7 +243,8 @@
                     android:textColor="#FF6B35"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:layout_marginTop="48dp" />
+                    android:layout_marginTop="48dp"
+                    android:layout_marginBottom="32dp" />
 
             </LinearLayout>
         </ScrollView>

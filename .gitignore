@@ -44,7 +44,7 @@ gradle.properties
 # ===============================================
 # Google Services file (contains API keys and project IDs)
 google-services.json
-
+service-account.json
 
 # If you ever create a file for API keys, ignore it
 secrets.properties

@@ -34,13 +34,13 @@
             android:layout_height="36dp"
             android:padding="8dp"
             android:background="@drawable/orange_circle"
-            android:tint="@android:color/white"
             android:src="@drawable/ic_favorite_outline"
             android:visibility="gone"
             android:contentDescription="@string/content_desc_favorite"
             app:layout_constraintTop_toTopOf="@id/iv_property"
             app:layout_constraintEnd_toEndOf="@id/iv_property"
-            android:layout_margin="12dp" />
+            android:layout_margin="12dp"
+            app:tint="@android:color/white" />
 
         <!-- Status badge (Active / Pending / Archived) -->
         <TextView

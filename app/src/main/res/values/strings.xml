@@ -115,9 +115,9 @@
     <string name="content_desc_profile_image">Profile image description</string>
 
     <!-- MyRentFragment -->
-<!--    <string name="active_status">Active</string>-->
-<!--    <string name="pending_status">Pending</string>-->
-<!--    <string name="history_status">Archived</string>-->
+    <!--    <string name="active_status">Active</string>-->
+    <!--    <string name="pending_status">Pending</string>-->
+    <!--    <string name="history_status">Archived</string>-->
     <string name="add_property">Add Property</string>
     <string name="empty_state_default">No properties found</string>
 
@@ -141,4 +141,8 @@
     <string name="menu_favorites">Favorites</string>
     <string name="menu_about">About</string>
 
+    <!-- Cover Image -->
+    <string name="content_desc_cover_image">Cover Image</string>
+    <string name="change_cover_photo">Change cover photo</string>
+    <string name="fcm_function_url">https://sendnotification-shnqbifj3a-uc.a.run.app</string>
 </resources>

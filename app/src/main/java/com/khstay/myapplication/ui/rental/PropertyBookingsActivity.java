@@ -78,21 +78,61 @@ public class PropertyBookingsActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        bookingAdapter = new BookingRequestAdapter(bookingList,
-                new BookingRequestAdapter.OnBookingActionListener() {
-                    @Override
-                    public void onApprove(BookingRequest booking) {
-                        showApproveDialog(booking);
-                    }
+        bookingAdapter = new BookingRequestAdapter(bookingList, new BookingRequestAdapter.OnBookingActionListener() {
+            @Override
+            public void onApprove(BookingRequest booking) {
+                showApproveDialog(booking);
+            }
 
-                    @Override
-                    public void onReject(BookingRequest booking) {
-                        showRejectDialog(booking);
-                    }
-                });
+            @Override
+            public void onReject(BookingRequest booking) {
+                showRejectDialog(booking);
+            }
+
+            @Override
+            public void onDelete(BookingRequest booking) {
+                showDeleteDialog(booking);
+            }
+        });
 
         rvBookingRequests.setLayoutManager(new LinearLayoutManager(this));
         rvBookingRequests.setAdapter(bookingAdapter);
+    }
+
+    private void showDeleteDialog(BookingRequest booking) {
+        String status = booking.getStatus() != null ? booking.getStatus() : "pending";
+        String message;
+
+        if ("pending".equals(status)) {
+            message = "Delete this pending booking request?\n\nThe guest will be notified.";
+        } else {
+            message = "Remove this " + status + " booking from the list?\n\nThis cannot be undone.";
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Booking")
+                .setMessage(message)
+                .setPositiveButton("Delete", (dialog, which) -> deleteBooking(booking))
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void deleteBooking(BookingRequest booking) {
+        db.collection("bookings")
+                .document(booking.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Booking removed successfully", Toast.LENGTH_SHORT).show();
+
+                    // If approved booking was deleted, revert rental to active
+                    if ("approved".equals(booking.getStatus())) {
+                        updateRentalStatus(rentalId, "active");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to delete booking", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Delete failed", e);
+                });
     }
 
     private void setupClickListeners() {

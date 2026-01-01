@@ -19,11 +19,25 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.KHSTAY">
+        android:theme="@style/Theme.KHSTAY"
+        tools:targetApi="33">
         <activity
-            android:name=".ui.rental.PropertyBookingsActivity"
+            android:name=".ui.rental.MyBookingsActivity"
             android:exported="false" />
-        <!-- Google Maps API Key -->
+        <!-- FCM service -->
+        <service
+            android:name=".data.firebase.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service> <!-- Firebase Messaging defaults (one set only) -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notifications" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/primary" /> <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" /> <!-- Facebook SDK -->
@@ -68,11 +82,12 @@
             android:name=".ui.rental.BookingActivity"
             android:exported="false"
             android:screenOrientation="fullSensor"
-            android:windowSoftInputMode="adjustResize" /> <!-- Booking Requests (OWNER) -->
+            android:windowSoftInputMode="adjustResize" />
+
         <activity
             android:name=".ui.rental.BookingRequestsActivity"
             android:exported="false"
-            android:screenOrientation="portrait" /> <!-- Map Picker -->
+            android:screenOrientation="fullSensor" /> <!-- Map Picker -->
         <activity
             android:name=".MapPickerActivity"
             android:exported="false"
@@ -102,18 +117,17 @@
         <activity
             android:name=".ui.chat.ConversationsActivity"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="fullSensor" />
         <activity
             android:name=".ui.chat.ChatActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullSensor"
             android:windowSoftInputMode="adjustResize" /> <!-- Facebook SDK Activity -->
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:label="@string/app_name"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            tools:replace="android:theme" /> <!-- Facebook Content Provider -->
+            tools:replace="android:theme" /> <!-- Facebook Content Provider (should be exported) -->
         <provider
             android:name="com.facebook.FacebookContentProvider"
             android:authorities="com.facebook.app.FacebookContentProvider${facebook_app_id}"

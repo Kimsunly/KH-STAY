@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -20,6 +21,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -40,17 +42,22 @@ import java.util.List;
 public class PostRentalActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final int REQUEST_MAP_PICKER = 1001;
+    private static final int MAX_IMAGES = 3;
 
     private EditText etTitle, etPrice, etBedrooms, etBathrooms, etLocation, etDescription;
     private Spinner spinnerCurrency, spinnerCategory;
-    private ImageView ivBack, ivPhotoPreview;
+    private ImageView ivBack;
     private ImageButton btnAddCategory;
     private View btnAddImage, btnSelectLocation;
     private Button btnPostListing;
     private MapView mapView;
     private GoogleMap googleMap;
 
-    private Uri selectedImageUri;
+    // Multiple images support
+    private LinearLayout imagePreviewContainer;
+    private TextView tvImageCount;
+    private List<Uri> selectedImageUris = new ArrayList<>();
+
     private Double selectedLatitude;
     private Double selectedLongitude;
 
@@ -59,7 +66,6 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
 
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
-    // Dynamic category list
     private List<String> categoryList;
     private ArrayAdapter<String> categoryAdapter;
 
@@ -76,7 +82,6 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
         setupImagePicker();
         setupClickListeners();
 
-        // Initialize map
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
     }
@@ -93,34 +98,26 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
         etLocation = findViewById(R.id.etLocation);
         etDescription = findViewById(R.id.etDescription);
         btnAddImage = findViewById(R.id.btnAddImage);
-        ivPhotoPreview = findViewById(R.id.ivPhotoPreview);
+        imagePreviewContainer = findViewById(R.id.imagePreviewContainer);
+        tvImageCount = findViewById(R.id.tvImageCount);
         btnSelectLocation = findViewById(R.id.btnSelectLocation);
         mapView = findViewById(R.id.mapView);
         btnPostListing = findViewById(R.id.btnPostListing);
+
+        updateImageCountText();
     }
 
     private void setupSpinners() {
-        // Currency Spinner
         String[] currencies = {"USD", "KHR", "EUR", "THB"};
         ArrayAdapter<String> currencyAdapter = new ArrayAdapter<>(
                 this, android.R.layout.simple_spinner_item, currencies);
         currencyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerCurrency.setAdapter(currencyAdapter);
 
-        // Category Spinner with dynamic list
         categoryList = new ArrayList<>(Arrays.asList(
-                "Toul Kok",
-                "Psar Derm Tkev",
-                "Dangkao",
-                "Chamkar Mon",
-                "Mean Chey",
-                "Sen Sok",
-                "House",
-                "Apartment",
-                "Villa",
-                "Condo",
-                "Studio",
-                "Townhouse"
+                "Toul Kok", "Psar Derm Tkev", "Dangkao", "Chamkar Mon",
+                "Mean Chey", "Sen Sok", "House", "Apartment", "Villa",
+                "Condo", "Studio", "Townhouse"
         ));
 
         categoryAdapter = new ArrayAdapter<>(
@@ -134,14 +131,103 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        selectedImageUri = result.getData().getData();
-                        if (selectedImageUri != null) {
-                            ivPhotoPreview.setImageURI(selectedImageUri);
-                            ivPhotoPreview.setVisibility(View.VISIBLE);
+                        Uri imageUri = result.getData().getData();
+                        if (imageUri != null) {
+                            addImage(imageUri);
                         }
                     }
                 }
         );
+    }
+
+    private void addImage(Uri imageUri) {
+        if (selectedImageUris.size() >= MAX_IMAGES) {
+            Toast.makeText(this, "Maximum " + MAX_IMAGES + " images allowed", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        selectedImageUris.add(imageUri);
+        updateImagePreview();
+        updateImageCountText();
+    }
+
+    private void removeImage(int position) {
+        if (position >= 0 && position < selectedImageUris.size()) {
+            selectedImageUris.remove(position);
+            updateImagePreview();
+            updateImageCountText();
+        }
+    }
+
+    private void updateImagePreview() {
+        imagePreviewContainer.removeAllViews();
+
+        for (int i = 0; i < selectedImageUris.size(); i++) {
+            final int position = i;
+            Uri uri = selectedImageUris.get(i);
+
+            // Create container for each image
+            LinearLayout imageContainer = new LinearLayout(this);
+            imageContainer.setOrientation(LinearLayout.VERTICAL);
+            LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+            );
+            containerParams.setMargins(8, 0, 8, 0);
+            imageContainer.setLayoutParams(containerParams);
+
+            // Image view
+            ImageView imageView = new ImageView(this);
+            LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    300
+            );
+            imageView.setLayoutParams(imageParams);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+            Glide.with(this)
+                    .load(uri)
+                    .into(imageView);
+
+            // Remove button
+            Button removeBtn = new Button(this);
+            removeBtn.setText("Remove");
+            removeBtn.setTextColor(getResources().getColor(R.color.white));
+            removeBtn.setBackgroundColor(getResources().getColor(R.color.primary));
+            removeBtn.setOnClickListener(v -> removeImage(position));
+
+            LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            btnParams.setMargins(0, 8, 0, 0);
+            removeBtn.setLayoutParams(btnParams);
+
+            // Badge showing image number
+            TextView badge = new TextView(this);
+            badge.setText("Image " + (position + 1));
+            badge.setTextColor(getResources().getColor(R.color.white));
+            badge.setBackgroundColor(getResources().getColor(R.color.primary));
+            badge.setPadding(12, 6, 12, 6);
+            badge.setTextSize(12);
+
+            imageContainer.addView(badge);
+            imageContainer.addView(imageView);
+            imageContainer.addView(removeBtn);
+
+            imagePreviewContainer.addView(imageContainer);
+        }
+
+        // Show/hide add button based on image count
+        btnAddImage.setVisibility(selectedImageUris.size() < MAX_IMAGES ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateImageCountText() {
+        tvImageCount.setText(selectedImageUris.size() + " / " + MAX_IMAGES + " images selected");
+        tvImageCount.setTextColor(getResources().getColor(
+                selectedImageUris.isEmpty() ? R.color.text_hint : R.color.primary
+        ));
     }
 
     private void setupClickListeners() {
@@ -160,12 +246,10 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Add New Category");
 
-        // Set up the input
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
         input.setHint("Enter category name");
 
-        // Add padding
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -178,31 +262,23 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
         container.addView(input);
         builder.setView(container);
 
-        // Set up the buttons
         builder.setPositiveButton("Add", (dialog, which) -> {
             String newCategory = input.getText().toString().trim();
             if (!newCategory.isEmpty()) {
                 if (!categoryList.contains(newCategory)) {
                     categoryList.add(newCategory);
                     categoryAdapter.notifyDataSetChanged();
-
-                    // Select the newly added category
                     spinnerCategory.setSelection(categoryList.size() - 1);
-
-                    Toast.makeText(this, "Category added: " + newCategory,
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Category added: " + newCategory, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this, "Category already exists",
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Category already exists", Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(this, "Category name cannot be empty",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Category name cannot be empty", Toast.LENGTH_SHORT).show();
             }
         });
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-
         builder.show();
     }
 
@@ -236,7 +312,6 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
         googleMap.getUiSettings().setMapToolbarEnabled(false);
         googleMap.getUiSettings().setAllGesturesEnabled(false);
 
-        // Default location: Phnom Penh
         LatLng phnomPenh = new LatLng(11.5564, 104.9282);
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(phnomPenh, 12f));
     }
@@ -286,12 +361,11 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
             return;
         }
 
-        if (selectedImageUri == null) {
-            Toast.makeText(this, "Please select an image", Toast.LENGTH_SHORT).show();
+        if (selectedImageUris.isEmpty()) {
+            Toast.makeText(this, "Please select at least one image", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Parse values
         double price;
         try {
             price = Double.parseDouble(priceStr);
@@ -303,14 +377,12 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
         int bedrooms = bedroomsStr.isEmpty() ? 0 : Integer.parseInt(bedroomsStr);
         int bathrooms = bathroomsStr.isEmpty() ? 0 : Integer.parseInt(bathroomsStr);
 
-        // Get current user
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
             Toast.makeText(this, "You must be logged in to post", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Create Rental object
         Rental rental = new Rental();
         rental.setTitle(title);
         rental.setPrice(price);
@@ -323,23 +395,19 @@ public class PostRentalActivity extends AppCompatActivity implements OnMapReadyC
         rental.setIsPopular(false);
         rental.setOwnerId(currentUser.getUid());
 
-        // Add coordinates if selected
         if (selectedLatitude != null && selectedLongitude != null) {
             rental.setLatitude(selectedLatitude);
             rental.setLongitude(selectedLongitude);
         }
 
-        // Show loading
         btnPostListing.setEnabled(false);
-        btnPostListing.setText("Posting...");
+        btnPostListing.setText("Uploading " + selectedImageUris.size() + " images...");
 
-        // Upload to Firebase
-        rentalRepository.createRental(rental, selectedImageUri)
+        rentalRepository.createRental(rental, selectedImageUris)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(PostRentalActivity.this,
                             "Rental posted successfully!", Toast.LENGTH_SHORT).show();
 
-                    // Navigate back to MainActivity with refresh flag
                     Intent intent = new Intent(PostRentalActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     intent.putExtra("REFRESH_HOME", true);
